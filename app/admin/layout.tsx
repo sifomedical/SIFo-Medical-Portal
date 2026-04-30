@@ -7,11 +7,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession() as any;
-  const adminEmail = process.env.ADMIN_EMAIL || "";
+  const session = (await getServerSession()) as any;
 
   // Check if user is authenticated and is admin
-  if (!session || !session.user?.email || session.user.email !== adminEmail) {
+  if (!session || !session.isAdmin) {
     redirect("/dashboard");
   }
 
