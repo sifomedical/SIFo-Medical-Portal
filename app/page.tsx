@@ -1,9 +1,9 @@
 // Root → leitet zum Dashboard
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth/next";
 
 export default async function RootPage() {
-  const session = await auth();
+  const session = await getServerSession();
   if (!session) redirect("/login");
   redirect("/dashboard");
 }

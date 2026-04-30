@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth/next";
 import { CATEGORIES } from "@/types/process";
 import { ALL_PROCESSES, getProcessesByCategory } from "@/data/processes";
 import CategoryCard from "@/components/CategoryCard";
@@ -6,7 +6,7 @@ import ProcessCard from "@/components/ProcessCard";
 import { BookOpen, Layers, TrendingUp } from "lucide-react";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getServerSession();
   const firstName = session?.user?.name?.split(" ")[0] || "Team";
 
   const totalProcesses = ALL_PROCESSES.filter((p) => p.status === "active").length;
