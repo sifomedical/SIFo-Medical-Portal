@@ -7,8 +7,16 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession();
+  const session = (await getServerSession()) as any;
   if (!session) redirect("/login");
+
+  // Check approval status
+  if (session.approvalStatus === "pending") {
+    redirect("/pending-approval");
+  }
+  if (session.approvalStatus === "rejected") {
+    redirect("/login?error=AccessDenied");
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

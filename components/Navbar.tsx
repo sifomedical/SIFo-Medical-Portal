@@ -20,39 +20,39 @@ export default function Navbar() {
   });
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white border-b border-[#F5F6F7] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-lg bg-[#1B3A6B] flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[#0C2340] flex items-center justify-center text-white font-bold text-sm">
               S
             </div>
-            <span className="font-semibold text-gray-900 group-hover:text-[#1B3A6B] transition-colors">
+            <span className="font-semibold text-[#0C2340] group-hover:text-[#00A68B] transition-colors">
               SIFo Medical
             </span>
-            <span className="hidden sm:block text-xs text-gray-400 font-normal ml-1">
+            <span className="hidden sm:block text-xs text-[#9CA6B1] font-normal ml-1">
               Process Portal
             </span>
           </Link>
 
           {/* Breadcrumbs (Desktop) */}
           {breadcrumbs.length > 0 && (
-            <nav className="hidden md:flex items-center gap-1 text-sm text-gray-500">
-              <Link href="/" className="hover:text-[#1B3A6B] transition-colors">
+            <nav className="hidden md:flex items-center gap-1 text-sm text-[#6A7A8B]">
+              <Link href="/" className="hover:text-[#00A68B] transition-colors">
                 <Home className="w-4 h-4" />
               </Link>
               {breadcrumbs.map((crumb, idx) => (
                 <span key={crumb.href} className="flex items-center gap-1">
-                  <ChevronRight className="w-3 h-3 text-gray-300" />
+                  <ChevronRight className="w-3 h-3 text-[#CDD3D8]" />
                   {idx === breadcrumbs.length - 1 ? (
-                    <span className="text-gray-700 font-medium capitalize">
+                    <span className="text-[#0C2340] font-medium capitalize">
                       {crumb.label}
                     </span>
                   ) : (
                     <Link
                       href={crumb.href}
-                      className="hover:text-[#1B3A6B] capitalize transition-colors"
+                      className="hover:text-[#00A68B] capitalize transition-colors"
                     >
                       {crumb.label}
                     </Link>
@@ -70,15 +70,15 @@ export default function Navbar() {
                 <img
                   src={session.user.image}
                   alt={session.user.name || "User"}
-                  className="w-8 h-8 rounded-full border-2 border-gray-100"
+                  className="w-8 h-8 rounded-full border-2 border-[#F5F6F7]"
                 />
               )}
-              <span className="hidden sm:block text-sm text-gray-600">
+              <span className="hidden sm:block text-sm text-[#6A7A8B]">
                 {session.user.name}
               </span>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-500 transition-colors px-2 py-1 rounded-md hover:bg-red-50"
+                className="flex items-center gap-1.5 text-sm text-[#6A7A8B] hover:text-[#D81E5B] transition-colors px-2 py-1 rounded-md hover:bg-[#D81E5B]/5"
                 title="Abmelden"
               >
                 <LogOut className="w-4 h-4" />

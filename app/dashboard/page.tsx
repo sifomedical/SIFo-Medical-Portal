@@ -18,54 +18,54 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-10">
       {/* Hero Header */}
-      <div className="relative bg-gradient-to-r from-[#1B3A6B] to-[#2C4F8C] rounded-3xl p-8 sm:p-10 text-white overflow-hidden">
+      <div className="relative bg-gradient-to-r from-[#0C2340] to-[#00A68B] rounded-2xl p-8 sm:p-12 text-white overflow-hidden">
         {/* Decorative circles */}
-        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full" />
-        <div className="absolute -bottom-16 right-32 w-64 h-64 bg-white/5 rounded-full" />
+        <div className="absolute -top-20 -right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 left-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
 
-        <div className="relative">
-          <p className="text-blue-200 text-sm font-medium mb-1">
+        <div className="relative z-10">
+          <p className="text-[#D2EDE7] text-sm font-light mb-2">
             Willkommen zurück, {firstName} 👋
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3">
+          <h1 className="text-4xl sm:text-5xl font-semibold mb-4">
             SIFo Medical
             <br />
-            <span className="text-blue-200">Process Portal</span>
+            <span className="text-[#D2EDE7] font-light">Process Portal</span>
           </h1>
-          <p className="text-blue-100 max-w-xl text-sm sm:text-base leading-relaxed">
+          <p className="text-[#D2EDE7]/90 max-w-xl text-sm sm:text-base leading-relaxed">
             Alle Unternehmens-Prozesse an einem Ort – übersichtlich dokumentiert,
             grafisch dargestellt und jederzeit abrufbar.
           </p>
 
           {/* Stats Row */}
-          <div className="flex flex-wrap gap-6 mt-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
-                <BookOpen className="w-4 h-4" />
+          <div className="flex flex-wrap gap-8 mt-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#00A68B]/25 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalProcesses}</p>
-                <p className="text-xs text-blue-200">Prozesse</p>
+                <p className="text-3xl font-bold">{totalProcesses}</p>
+                <p className="text-xs text-[#D2EDE7]">Prozesse</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
-                <Layers className="w-4 h-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#00A68B]/25 flex items-center justify-center">
+                <Layers className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
+                <p className="text-3xl font-bold">
                   {CATEGORIES.filter((c) => getProcessesByCategory(c.id).length > 0).length}
                 </p>
-                <p className="text-xs text-blue-200">Bereiche</p>
+                <p className="text-xs text-[#D2EDE7]">Bereiche</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#00A68B]/25 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">Live</p>
-                <p className="text-xs text-blue-200">Status</p>
+                <p className="text-3xl font-bold">Live</p>
+                <p className="text-xs text-[#D2EDE7]">Status</p>
               </div>
             </div>
           </div>
@@ -74,9 +74,9 @@ export default async function DashboardPage() {
 
       {/* Category Grid */}
       <section>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-gray-900">Bereiche</h2>
-          <span className="text-sm text-gray-500">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-semibold text-[#0C2340]">Bereiche</h2>
+          <span className="text-sm text-[#6A7A8B]">
             {CATEGORIES.length} Abteilungen
           </span>
         </div>
@@ -94,8 +94,8 @@ export default async function DashboardPage() {
       {/* Recently Updated */}
       {recentProcesses.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-900">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-[#0C2340]">
               Zuletzt aktualisiert
             </h2>
           </div>
@@ -108,12 +108,12 @@ export default async function DashboardPage() {
       )}
 
       {/* Footer hint */}
-      <div className="text-center pb-4">
-        <p className="text-xs text-gray-400">
+      <div className="text-center pb-4 pt-8">
+        <p className="text-xs text-[#9CA6B1]">
           Prozesse fehlen oder sind veraltet?{" "}
           <a
             href="mailto:sifo.medical@gmail.com"
-            className="text-[#1B3A6B] hover:underline"
+            className="text-[#00A68B] hover:underline font-medium"
           >
             Feedback senden
           </a>

@@ -42,6 +42,7 @@ export interface Process {
   mermaidDiagram: string;
   tags: string[];
   status: "active" | "draft" | "archived";
+  processVideoUrl?: string;
 }
 
 export interface Category {

@@ -22,10 +22,10 @@ export default function CategoryCard({ category, processCount }: Props) {
         </span>
       </div>
 
-      <h3 className={`text-lg font-bold text-gray-900 mb-2 ${category.color}`}>
+      <h3 className={`text-lg font-semibold text-[#0C2340] mb-2 ${category.color}`}>
         {category.title}
       </h3>
-      <p className="text-sm text-gray-600 leading-relaxed flex-1">
+      <p className="text-sm text-[#6A7A8B] leading-relaxed flex-1">
         {category.description}
       </p>
 

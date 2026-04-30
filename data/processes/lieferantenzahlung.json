@@ -1,0 +1,171 @@
+{
+  "id": "finance-lieferantenzahlung",
+  "slug": "lieferantenzahlung",
+  "title": "Wöchentliche Lieferantenzahlung",
+  "subtitle": "Montags: Zahlungsabwicklung für Lieferantenrechnungen",
+  "category": "finance",
+  "description": "Wöchentlicher Prozess zur Verwaltung und Abwicklung von Lieferantenzahlungen. Jeden Montag um 9:45 Uhr werden offene Rechnungen geprüft, ausgewählt und per SEPA-Überweisung bearbeitet.",
+  "goals": [
+    "Pünktliche Zahlung von Lieferantenrechnungen sicherstellen",
+    "Zahlungsvorgänge standardisiert und nachvollziehbar dokumentieren",
+    "Sammelzahlungen effizient über SEPA-Überweisung abwickeln",
+    "XML-Export für Banking-Verarbeitung generieren"
+  ],
+  "steps": [
+    {
+      "id": "vorbereitung",
+      "title": "1. Vorbereitung – Odoo öffnen",
+      "description": "Jeden Montag um 9:45 Uhr: Odoo-Applikation starten und zum Buchhaltungsmodul navigieren.",
+      "tools": ["Odoo"],
+      "substeps": [
+        {
+          "id": "odoo-start",
+          "title": "Odoo-Applikation öffnen",
+          "description": "Odoo im Browser starten oder App-Icon anklicken."
+        },
+        {
+          "id": "modul-nav",
+          "title": "Zum Modul Buchhaltung navigieren",
+          "description": "Menü: Buchhaltung → Lieferanten aufrufen"
+        }
+      ]
+    },
+    {
+      "id": "filterung",
+      "title": "2. Rechnungen filtern & sortieren",
+      "description": "Offene Lieferantenrechnungen anzeigen und nach Fälligkeitsdatum sortieren (absteigend).",
+      "tools": ["Odoo"],
+      "tips": [
+        "Filter: Status = Offen/Zu bezahlen",
+        "Sortierung: Fälligkeitsdatum absteigend (älteste zuerst)",
+        "Überblick: Sublieferanten und Sonstige getrennt prüfen"
+      ],
+      "substeps": [
+        {
+          "id": "ansicht",
+          "title": "Lieferanten-Ansicht öffnen",
+          "description": "Buchhaltung → Lieferanten (Liste aller Rechnungen)"
+        },
+        {
+          "id": "sort",
+          "title": "Nach Fälligkeitsdatum sortieren",
+          "description": "Spalte 'Fälligkeitsdatum' anklicken → Absteigend (älteste oben)"
+        }
+      ]
+    },
+    {
+      "id": "auswahl",
+      "title": "3. Rechnungen auswählen",
+      "description": "Alle zu zahlenden Rechnungen mit Häkchen in der ersten Spalte markieren.",
+      "tools": ["Odoo"],
+      "tips": [
+        "Nur Rechnungen mit Status 'Zu bezahlen' auswählen",
+        "Häkchen in der erste Spalte setzen",
+        "Für jede Rechnung prüfen: Rechnungsbetrag, Lieferant, Fälligkeitsdatum korrekt?"
+      ]
+    },
+    {
+      "id": "zahlung-reg",
+      "title": "4. Zahlung registrieren",
+      "description": "Markierte Rechnungen zur Zahlung vorbereiten über die Aktion 'Zahlung registrieren'.",
+      "tools": ["Odoo"],
+      "substeps": [
+        {
+          "id": "aktion-menu",
+          "title": "Menü 'Aktionen' öffnen",
+          "description": "Oben rechts: Aktionen → Zahlung registrieren anklicken"
+        },
+        {
+          "id": "konto-wahl",
+          "title": "Bankkonto auswählen",
+          "description": "Standardkonto: 9464 (SIFo Medical Hauptkonto) – dieses i.d.R. bereits vorgegeben"
+        },
+        {
+          "id": "methode",
+          "title": "Zahlungsmethode: SEPA-Überweisung",
+          "description": "Dropdown: Zahlungsmethode → SEPA-Überweisung auswählen (NICHT: Scheck, Kartenzahlung, etc.)"
+        },
+        {
+          "id": "zahlung-btn",
+          "title": "Zahlung erstellen",
+          "description": "Button 'Zahlung erstellen' anklicken"
+        }
+      ]
+    },
+    {
+      "id": "sammel-prep",
+      "title": "5. Sammelzahlung vorbereiten",
+      "description": "Nach Zahlung registrieren: Alle Zahlungsempfänger auswählen und Sammelzahlung erstellen.",
+      "tools": ["Odoo"],
+      "substeps": [
+        {
+          "id": "uebersicht",
+          "title": "Zahlungsempfänger-Übersicht",
+          "description": "System zeigt alle registrierten Zahlungsempfänger – alle auswählen (oben links: Alle anwählen)"
+        },
+        {
+          "id": "aktion2",
+          "title": "Aktion 'Sammelzahlung erstellen'",
+          "description": "Aktionen-Menü → 'Sammelzahlung erstellen' anklicken"
+        }
+      ]
+    },
+    {
+      "id": "sammel-config",
+      "title": "6. Sammelzahlung konfigurieren",
+      "description": "Sammelbuchungen deaktivieren und Zahlungsdetails finalisieren.",
+      "tools": ["Odoo"],
+      "tips": [
+        "WICHTIG: Haken bei 'Sammelbuchungen' WEGMACHEN (unchecken)",
+        "Damit jede Rechnung einzeln nachverfolgbar bleibt",
+        "📹 Video-Anleitung: https://www.dropbox.com/scl/fi/7ciclb1acvhofi8trywwd/BH_Sammel-berweisung-erstellen.mov?rlkey=2gvj8po7u0tmx6x7jgezmxa68&dl=0"
+      ],
+      "substeps": [
+        {
+          "id": "haken",
+          "title": "Sammelbuchungen-Haken entfernen",
+          "description": "Haken bei 'Sammelbuchungen' deaktivieren (unchecken)"
+        },
+        {
+          "id": "validieren",
+          "title": "Auf 'Validieren' klicken",
+          "description": "Button 'Validieren' – System generiert jetzt die Zahlungsdatei"
+        }
+      ]
+    },
+    {
+      "id": "export",
+      "title": "7. XML-Export & Banking-Verarbeitung",
+      "description": "XML-Datei wird generiert – diese wird in die Banking-App eingelesen und verarbeitet.",
+      "tools": ["Odoo", "Erste Bank Sparkasse Banking App"],
+      "tips": [
+        "XML-Datei wird automatisch heruntergeladen (Dateiname: z.B. 'payment_YYYYMMDD.xml')",
+        "Diese Datei kann in der Banking-App der Erste Bank Sparkasse hochgeladen werden",
+        "Banking-App verarbeitet die Datei und wickelt die SEPA-Überweisungen ab"
+      ],
+      "substeps": [
+        {
+          "id": "xml-download",
+          "title": "XML-Datei herunterladen",
+          "description": "System bietet XML-Datei zum Download an (automatisch oder über 'Download'-Button)"
+        },
+        {
+          "id": "banking",
+          "title": "In Banking-App einlesen",
+          "description": "Login Erste Bank Sparkasse → Banking-App → XML-Import → Datei auswählen → Validierung & Verarbeitung"
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {"name": "Odoo ERP", "url": "https://sifo-gmbh.odoo.com/web"},
+    {"name": "Erste Bank Sparkasse", "icon": "🏦"}
+  ],
+  "owner": "Finance Team / Simon Föger (SIFo GmbH)",
+  "frequency": "Jeden Montag um 9:45 Uhr",
+  "lastUpdated": "2025-04-30",
+  "tags": ["finance", "zahlung", "lieferanten", "sepa", "odoo", "sammelzahlung"],
+  "status": "active",
+  "processVideoUrl": "https://www.dropbox.com/scl/fi/7ciclb1acvhofi8trywwd/BH_Sammel-berweisung-erstellen.mov?rlkey=2gvj8po7u0tmx6x7jgezmxa68&dl=0",
+  "mermaidDiagram": "flowchart TD\n    A([📅 Montag 9:45 Uhr]) --> B[Odoo Buchhaltung öffnen]\n    B --> C[Lieferanten-Modul aufrufen]\n    C --> D[Nach Fälligkeitsdatum sortieren]\n    D --> E{Rechnungen prüfen}\n    E -->|Zu bezahlen| F[Häkchen setzen]\n    E -->|Nicht fällig| G[Ignorieren]\n    F --> H[Aktionen → Zahlung registrieren]\n    H --> H1[Konto 9464 auswählen]\n    H1 --> H2[SEPA-Überweisung wählen]\n    H2 --> H3[Zahlung erstellen]\n    H3 --> I[Zahlungsempfänger-Übersicht]\n    I --> J[Alle Empfänger auswählen]\n    J --> K[Aktionen → Sammelzahlung erstellen]\n    K --> L[Sammelbuchungen-Haken entfernen]\n    L --> M[Validieren]\n    M --> N[XML-Datei generieren]\n    N --> O[XML in Banking-App hochladen]\n    O --> P[SEPA-Überweisungen verarbeitet]\n    P --> Q([✅ Zahlungen abgewickelt])\n\n    style A fill:#00A68B,color:#fff\n    style Q fill:#0C2340,color:#fff\n    style F fill:#D2EDE7\n    style H3 fill:#00A68B,color:#fff\n    style M fill:#00A68B,color:#fff"
+}

@@ -1,8 +1,10 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { getUserByEmail, createUser } from "@/lib/db-users";
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS || "").split(",").filter(Boolean);
 const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || "").split(",").filter(Boolean);
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
 
 function isEmailAllowed(email: string): boolean {
   if (ALLOWED_DOMAINS.length === 0 && ALLOWED_EMAILS.length === 0) return true;
@@ -26,7 +28,32 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
-      return isEmailAllowed(user.email);
+      if (!isEmailAllowed(user.email)) return false;
+
+      // Create or update user in database
+      let dbUser = getUserByEmail(user.email);
+      if (!dbUser) {
+        dbUser = createUser({
+          id: `user_${Date.now()}`,
+          email: user.email,
+          name: user.name || undefined,
+          status: "pending",
+        });
+      }
+
+      return true;
+    },
+
+    async session({ session, token }) {
+      if (session.user?.email) {
+        const dbUser = getUserByEmail(session.user.email);
+        if (dbUser) {
+          // Add approval status and admin flag to session
+          (session as any).approvalStatus = dbUser.status;
+          (session as any).isAdmin = session.user.email === ADMIN_EMAIL;
+        }
+      }
+      return session;
     },
   },
 });

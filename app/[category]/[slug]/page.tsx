@@ -54,6 +54,21 @@ export default async function ProcessDetailPage({ params }: Props) {
 
           <p className="text-gray-700 leading-relaxed mt-4">{proc.description}</p>
 
+          {/* Video Link */}
+          {proc.processVideoUrl && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <a
+                href={proc.processVideoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#00A68B] hover:bg-[#008B72] text-white rounded-lg font-medium transition-colors"
+              >
+                <span>🎬</span>
+                Video-Anleitung
+              </a>
+            </div>
+          )}
+
           {/* Meta */}
           <div className="flex flex-wrap gap-4 mt-5 pt-5 border-t border-gray-100 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">

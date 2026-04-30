@@ -1,24 +1,14 @@
 // ============================================================
 // Prozess-Datenbank – Zentrales Register
-// Neuen Prozess hinzufügen: Datei in /data/processes/ anlegen
-// und hier importieren + in die Liste eintragen.
+// Neuen Prozess hinzufügen: JSON-Datei in /data/processes/ anlegen.
+// Der Loader liest automatisch alle .json-Dateien.
 // ============================================================
 
 import { Process, CategoryId } from "@/types/process";
+import { loadProcessesFromJSON } from "./loader";
 
-// Imports – hier neue Prozesse hinzufügen:
-import webinare from "./marketing-webinare";
-import googleAds from "./marketing-google-ads";
-import linkedin from "./marketing-linkedin";
-import leadQualifizierung from "./sales-lead-qualifizierung";
-
-// Vollständige Prozess-Liste:
-export const ALL_PROCESSES: Process[] = [
-  webinare,
-  googleAds,
-  linkedin,
-  leadQualifizierung,
-];
+// Prozesse werden zur Build-Zeit aus JSON-Dateien geladen
+export const ALL_PROCESSES: Process[] = loadProcessesFromJSON();
 
 // Hilfsfunktionen:
 export function getProcessesByCategory(category: CategoryId): Process[] {

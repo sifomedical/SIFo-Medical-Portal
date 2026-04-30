@@ -9,38 +9,38 @@ function LoginContent() {
   const error = searchParams.get("error");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1B3A6B] via-[#2C4F8C] to-[#0EA5E9] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0C2340] via-[#394D64] to-[#00A68B] flex items-center justify-center p-4">
       {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl" />
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-white rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-white rounded-full blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-md">
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Top Brand Bar */}
-          <div className="bg-[#1B3A6B] p-6 text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 mb-3">
-              <span className="text-white text-2xl font-bold">S</span>
+          <div className="bg-[#0C2340] p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-[#00A68B]/20 mb-4">
+              <span className="text-[#00A68B] text-2xl font-bold">S</span>
             </div>
-            <h1 className="text-white text-xl font-bold">SIFo Medical</h1>
-            <p className="text-blue-200 text-sm mt-1">Process Portal</p>
+            <h1 className="text-white text-2xl font-semibold">SIFo GmbH</h1>
+            <p className="text-[#9CA6B1] text-sm mt-2">Process Portal</p>
           </div>
 
           {/* Login Form */}
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-semibold text-[#0C2340] mb-2">
               Willkommen zurück
             </h2>
-            <p className="text-gray-500 text-sm mb-8">
+            <p className="text-[#6A7A8B] text-sm mb-8 leading-relaxed">
               Melde dich mit deinem Unternehmens-Account an, um auf das
               Prozess-Portal zuzugreifen.
             </p>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+              <div className="mb-6 p-4 bg-[#D81E5B]/10 border border-[#D81E5B]/30 rounded-lg text-sm text-[#D81E5B]">
                 {error === "AccessDenied"
                   ? "Dein Account hat keinen Zugriff auf dieses Portal. Bitte wende dich an den Administrator."
                   : "Es ist ein Fehler aufgetreten. Bitte versuche es erneut."}
@@ -50,7 +50,7 @@ function LoginContent() {
             {/* Google Sign In Button */}
             <button
               onClick={() => signIn("google", { callbackUrl })}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md group"
+              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-[#00A68B] border-2 border-[#00A68B] rounded-lg font-semibold text-white hover:bg-[#008B72] hover:border-[#008B72] transition-all duration-200 shadow-sm hover:shadow-md"
             >
               <svg
                 className="w-5 h-5"
@@ -77,13 +77,13 @@ function LoginContent() {
               Mit Google anmelden
             </button>
 
-            <p className="text-xs text-gray-400 text-center mt-6">
-              Nur für autorisierte SIFo Medical Mitarbeiter.
+            <p className="text-xs text-[#9CA6B1] text-center mt-8">
+              Nur für autorisierte SIFo GmbH Mitarbeiter.
               <br />
               Probleme beim Zugang?{" "}
               <a
                 href="mailto:sifo.medical@gmail.com"
-                className="text-[#1B3A6B] hover:underline"
+                className="text-[#00A68B] hover:underline font-medium"
               >
                 Administrator kontaktieren
               </a>
@@ -92,8 +92,8 @@ function LoginContent() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-white/60 text-xs mt-6">
-          © {new Date().getFullYear()} SIFo Medical GmbH · Vertraulich
+        <p className="text-center text-white/70 text-xs mt-8 font-light">
+          © {new Date().getFullYear()} SIFo GmbH · Vertraulich
         </p>
       </div>
     </div>
