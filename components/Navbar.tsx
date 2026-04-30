@@ -2,13 +2,14 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, ChevronRight, Home } from "lucide-react";
+import { LogOut, ChevronRight, Home, Settings } from "lucide-react";
 import Image from "next/image";
 import { CATEGORIES } from "@/types/process";
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const isAdmin = (session as any)?.isAdmin;
 
   // Breadcrumb aus Pfad ableiten
   const segments = pathname.split("/").filter(Boolean);
@@ -26,7 +27,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-lg bg-[#0C2340] flex items-center justify-center p-1">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0C2340] to-[#1B3A6B] flex items-center justify-center p-1">
               <Image
                 src="/signet.png"
                 alt="SIFo Medical"
@@ -69,7 +70,7 @@ export default function Navbar() {
             </nav>
           )}
 
-          {/* User & Logout */}
+          {/* User, Admin & Logout */}
           {session?.user && (
             <div className="flex items-center gap-3">
               {session.user.image && (
@@ -83,6 +84,19 @@ export default function Navbar() {
               <span className="hidden sm:block text-sm text-[#6A7A8B]">
                 {session.user.name}
               </span>
+
+              {/* Admin Link */}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1.5 text-sm text-[#00A68B] hover:text-[#008B72] transition-colors px-2 py-1 rounded-md hover:bg-[#00A68B]/5 font-medium"
+                  title="Admin Dashboard"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:block">Admin</span>
+                </Link>
+              )}
+
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="flex items-center gap-1.5 text-sm text-[#6A7A8B] hover:text-[#D81E5B] transition-colors px-2 py-1 rounded-md hover:bg-[#D81E5B]/5"
