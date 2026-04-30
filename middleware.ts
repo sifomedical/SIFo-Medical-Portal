@@ -1,13 +1,14 @@
 import { withAuth } from "next-auth/middleware";
-import { NextRequest } from "next/server";
 
-export default withAuth(function middleware(request: NextRequest) {
-  return null;
+export default withAuth({
+  pages: {
+    signIn: "/login",
+  },
 });
 
 export const config = {
   matcher: [
-    // Alle Routen außer statische Assets, _next und API-Routen schützen
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$).*)",
+    // Alle Routen außer statische Assets, _next, API und login schützen
+    "/((?!api|_next/static|_next/image|favicon.ico|login|.*\\.png$|.*\\.svg$).*)",
   ],
 };
