@@ -2,6 +2,7 @@
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import Image from "next/image";
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -22,7 +23,14 @@ function LoginContent() {
           {/* Top Brand Bar */}
           <div className="bg-[#0C2340] p-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-[#00A68B]/20 mb-4">
-              <span className="text-[#00A68B] text-2xl font-bold">S</span>
+              <Image
+                src="/signet.png"
+                alt="SIFo Medical"
+                width={56}
+                height={56}
+                className="w-full h-full"
+                priority
+              />
             </div>
             <h1 className="text-white text-2xl font-semibold">SIFo GmbH</h1>
             <p className="text-[#9CA6B1] text-sm mt-2">Process Portal</p>
