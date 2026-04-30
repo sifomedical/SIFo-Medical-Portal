@@ -1,6 +1,15 @@
+import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
 import Navbar from "@/components/Navbar";
 
-export default function CategoryLayout({ children }: { children: React.ReactNode }) {
+export default async function CategoryLayout({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  const session = await getServerSession();
+  if (!session) redirect("/login");
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
