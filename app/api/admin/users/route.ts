@@ -16,9 +16,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const pending = getAllPendingUsers();
-    const approved = getAllApprovedUsers();
-    const rejected = getAllRejectedUsers();
+    const pending = await getAllPendingUsers();
+    const approved = await getAllApprovedUsers();
+    const rejected = await getAllRejectedUsers();
 
     return NextResponse.json(
       {

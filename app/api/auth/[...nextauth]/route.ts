@@ -31,9 +31,9 @@ const handler = NextAuth({
       if (!isEmailAllowed(user.email)) return false;
 
       // Create or update user in database
-      let dbUser = getUserByEmail(user.email);
+      let dbUser = await getUserByEmail(user.email);
       if (!dbUser) {
-        dbUser = createUser({
+        dbUser = await createUser({
           id: `user_${Date.now()}`,
           email: user.email,
           name: user.name || undefined,
@@ -46,7 +46,7 @@ const handler = NextAuth({
 
     async session({ session, token }) {
       if (session.user?.email) {
-        const dbUser = getUserByEmail(session.user.email);
+        const dbUser = await getUserByEmail(session.user.email);
         if (dbUser) {
           // Add approval status and admin flag to session
           (session as any).approvalStatus = dbUser.status;

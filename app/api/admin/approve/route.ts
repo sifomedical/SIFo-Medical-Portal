@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const updatedUser = updateUserStatus(email, "approved", adminEmail);
+    const updatedUser = await updateUserStatus(email, "approved", adminEmail);
 
     if (!updatedUser) {
       return NextResponse.json(
