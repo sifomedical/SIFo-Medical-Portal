@@ -1,0 +1,171 @@
+import { Process } from "@/types/process";
+
+const webinare: Process = {
+  id: "marketing-webinare",
+  slug: "webinare",
+  title: "Webinar-Prozess",
+  subtitle: "Von der Idee bis zum Follow-up",
+  category: "marketing",
+  description:
+    "Webinare sind eines unserer wichtigsten Marketing-Instrumente zur Leadgenerierung und Positionierung als Experte im Medizintechnik-Bereich. Dieser Prozess beschreibt alle Schritte von der Themenauswahl bis zur Nachbearbeitung.",
+  goals: [
+    "Leads generieren und qualifizieren",
+    "Expertise und Vertrauen aufbauen",
+    "Produkte und Lösungen vorstellen",
+    "Bestandskunden informieren und binden",
+  ],
+  steps: [
+    {
+      id: "planung",
+      title: "1. Planung & Themenauswahl",
+      description:
+        "Mindestens 4 Wochen vor dem Webinar wird das Thema, der Referent und das Zieldatum festgelegt.",
+      tools: ["Notion", "Google Calendar"],
+      tips: [
+        "Themen aus häufigen Kundenfragen ableiten",
+        "Saisonalität beachten (z.B. Messetermine)",
+      ],
+      substeps: [
+        {
+          id: "planung-thema",
+          title: "Thema definieren",
+          description:
+            "Konkreten Titel und Untertitel festlegen, Zielgruppe definieren (z.B. Einkäufer, Techniker, Geschäftsführer).",
+        },
+        {
+          id: "planung-referent",
+          title: "Referent bestätigen",
+          description:
+            "Internen oder externen Experten anfragen und Termin blockieren.",
+        },
+        {
+          id: "planung-plattform",
+          title: "Plattform wählen",
+          description:
+            "Zoom Webinars für größere Formate (>50 TN), Google Meet für kleinere Runden.",
+        },
+      ],
+    },
+    {
+      id: "promotion",
+      title: "2. Promotion & Bewerbung",
+      description:
+        "Das Webinar wird über alle verfügbaren Kanäle mindestens 3 Wochen vor dem Termin beworben.",
+      tools: ["LinkedIn", "Mailchimp", "Google Ads", "Website"],
+      substeps: [
+        {
+          id: "promo-landingpage",
+          title: "Landing Page erstellen",
+          description:
+            "Dedizierte Anmeldeseite auf der Website mit klarem CTA, Agenda und Speaker-Bio.",
+        },
+        {
+          id: "promo-linkedin",
+          title: "LinkedIn Kampagne",
+          description:
+            "Event auf LinkedIn Unternehmensseite anlegen + organische Posts (Simon persönlich + Firmenseite). Bezahlte Promotion bei wichtigen Webinaren.",
+        },
+        {
+          id: "promo-email",
+          title: "E-Mail an Kontaktliste",
+          description:
+            "Segmentierte E-Mail-Kampagne an relevante Kontakte über Mailchimp. Erinnerungs-E-Mail 1 Woche vorher und 24h vorher.",
+        },
+      ],
+    },
+    {
+      id: "durchfuehrung",
+      title: "3. Durchführung",
+      description: "Am Tag des Webinars: technischer Check 30 Min. vorher.",
+      tools: ["Zoom", "Slides", "Miro (optional)"],
+      tips: [
+        "Recording immer aktivieren",
+        "Co-Host einrichten für technischen Support",
+        "Chat-Fragen sammeln für FAQ",
+      ],
+      substeps: [
+        {
+          id: "tech-check",
+          title: "Technischer Check (T-30 Min)",
+          description: "Audio, Video, Screensharing, Folien testen.",
+        },
+        {
+          id: "webinar-live",
+          title: "Live-Durchführung",
+          description:
+            "Intro (5 Min) → Hauptvortrag (30-40 Min) → Q&A (10-15 Min) → CTA (5 Min).",
+        },
+      ],
+    },
+    {
+      id: "nachbearbeitung",
+      title: "4. Nachbearbeitung & Follow-up",
+      description:
+        "Innerhalb von 24-48 Stunden nach dem Webinar erfolgen alle Follow-up-Aktivitäten.",
+      tools: ["HubSpot/CRM", "Mailchimp", "LinkedIn", "YouTube"],
+      substeps: [
+        {
+          id: "recording",
+          title: "Recording aufbereiten",
+          description:
+            "Intro/Outro schneiden, auf YouTube hochladen (ggf. unlisted für Teilnehmer).",
+        },
+        {
+          id: "follow-up-email",
+          title: "Follow-up E-Mail versenden",
+          description:
+            "Danke-E-Mail mit Recording-Link, Slides und nächsten Schritten an alle Teilnehmer.",
+        },
+        {
+          id: "leads-crm",
+          title: "Leads ins CRM übertragen",
+          description:
+            "Alle Anmeldungen und Teilnehmer als Leads in HubSpot anlegen und qualifizieren.",
+        },
+        {
+          id: "content-recycling",
+          title: "Content recyceln",
+          description:
+            "Key-Takeaways als LinkedIn-Post, kurze Clips für Social Media.",
+        },
+      ],
+    },
+  ],
+  tools: [
+    { name: "Zoom Webinars", url: "https://zoom.us" },
+    { name: "Mailchimp", url: "https://mailchimp.com" },
+    { name: "LinkedIn", url: "https://linkedin.com/company/sifo-medical" },
+    { name: "HubSpot", url: "https://hubspot.com" },
+    { name: "Notion", url: "https://notion.so" },
+    { name: "YouTube", url: "https://youtube.com" },
+  ],
+  owner: "Simon Foger",
+  frequency: "1–2x pro Monat",
+  lastUpdated: "2025-01-01",
+  tags: ["webinar", "leadgen", "content", "zoom", "email-marketing"],
+  status: "active",
+  mermaidDiagram: `flowchart TD
+    A([🚀 Webinar-Idee]) --> B[Thema & Datum festlegen]
+    B --> C[Referent bestätigen]
+    C --> D[Landing Page erstellen]
+    D --> E{Promotion starten}
+    E --> E1[📧 E-Mail Kampagne]
+    E --> E2[💼 LinkedIn Posts]
+    E --> E3[🎯 Google Ads optional]
+    E1 & E2 & E3 --> F[Erinnerung 24h vorher]
+    F --> G[🎥 Webinar live]
+    G --> H{Nachbearbeitung}
+    H --> H1[Recording aufbereiten]
+    H --> H2[Follow-up E-Mail]
+    H --> H3[Leads ins CRM]
+    H1 --> I[YouTube Upload]
+    H2 & H3 --> J[🎯 Sales Follow-up]
+    I --> K[Content recyceln - LinkedIn, Clips]
+    J & K --> L([✅ Prozess abgeschlossen])
+
+    style A fill:#7C3AED,color:#fff
+    style L fill:#059669,color:#fff
+    style G fill:#1B3A6B,color:#fff`,
+};
+
+export default webinare;
