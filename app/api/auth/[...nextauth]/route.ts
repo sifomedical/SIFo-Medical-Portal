@@ -46,18 +46,23 @@ const handler = NextAuth({
 
     async session({ session, token }) {
       if (session.user?.email) {
-        const dbUser = await getUserByEmail(session.user.email);
-        
-        // Always set isAdmin based on email, regardless of dbUser status
         const isAdmin = session.user.email === ADMIN_EMAIL;
         (session as any).isAdmin = isAdmin;
+
+        // Get user from database to get approval status
+        const dbUser = await getUserByEmail(session.user.email);
         
-        // If user exists in DB, add approval status
         if (dbUser) {
+          // User exists in DB - use their status
           (session as any).approvalStatus = dbUser.status;
         } else {
-          // If user doesn't exist in DB yet, check if they're admin
-          (session as any).approvalStatus = isAdmin ? "approved" : "pending";
+          // User doesn't exist yet - should not happen, but default to pending
+          (session as any).approvalStatus = "pending";
+        }
+
+        // Admin is always approved, even if not in DB yet
+        if (isAdmin) {
+          (session as any).approvalStatus = "approved";
         }
       }
       return session;

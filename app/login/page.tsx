@@ -22,12 +22,12 @@ function LoginContent() {
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Top Brand Bar */}
           <div className="bg-[#0C2340] p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-[#00A68B]/20 mb-4">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl mb-4">
               <Image
-                src="/signet.png"
+                src="/signet-white.png"
                 alt="SIFo Medical"
-                width={56}
-                height={56}
+                width={80}
+                height={80}
                 className="w-full h-full"
                 priority
               />

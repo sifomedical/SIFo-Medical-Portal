@@ -3,6 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, ChevronRight, Home } from "lucide-react";
+import Image from "next/image";
 import { CATEGORIES } from "@/types/process";
 
 export default function Navbar() {
@@ -25,8 +26,14 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-lg bg-[#0C2340] flex items-center justify-center text-white font-bold text-sm">
-              S
+            <div className="w-10 h-10 rounded-lg bg-[#0C2340] flex items-center justify-center p-1">
+              <Image
+                src="/signet.png"
+                alt="SIFo Medical"
+                width={32}
+                height={32}
+                className="w-full h-full"
+              />
             </div>
             <span className="font-semibold text-[#0C2340] group-hover:text-[#00A68B] transition-colors">
               SIFo Medical
