@@ -29,12 +29,15 @@ export default function ProcessFormStep1({
   };
 
   const validation = onValidate();
+  const isTitleValid = Boolean(data.title && data.title.trim());
+  const isSubtitleValid = Boolean(data.subtitle && data.subtitle.trim());
+  const isCategoryValid = Boolean(data.category);
 
   return (
     <div className="space-y-6">
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Prozess-Titel *
+          Prozess-Titel * {isTitleValid && <span className="text-green-600">✓</span>}
         </label>
         <input
           type="text"
@@ -42,16 +45,18 @@ export default function ProcessFormStep1({
           value={data.title}
           onChange={handleChange}
           placeholder="z.B. Freigabe von Blogposts in Notion"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent ${
+            !isTitleValid && !validation.valid ? "border-red-400 bg-red-50" : "border-gray-300"
+          }`}
         />
-        {!data.title && validation.errors.includes('"title" is required') && (
-          <p className="text-sm text-red-600 mt-1">Der Titel ist erforderlich</p>
+        {!isTitleValid && !validation.valid && (
+          <p className="text-sm text-red-600 mt-1">⚠️ Der Titel ist erforderlich</p>
         )}
       </div>
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Kurzer Untertitel (1-3 Worte) *
+          Kurzer Untertitel (1-3 Worte) * {isSubtitleValid && <span className="text-green-600">✓</span>}
         </label>
         <input
           type="text"
@@ -59,22 +64,26 @@ export default function ProcessFormStep1({
           value={data.subtitle}
           onChange={handleChange}
           placeholder="z.B. Review und Genehmigung"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent ${
+            !isSubtitleValid && !validation.valid ? "border-red-400 bg-red-50" : "border-gray-300"
+          }`}
         />
-        {!data.subtitle && validation.errors.includes('"subtitle" is required') && (
-          <p className="text-sm text-red-600 mt-1">Der Untertitel ist erforderlich</p>
+        {!isSubtitleValid && !validation.valid && (
+          <p className="text-sm text-red-600 mt-1">⚠️ Der Untertitel ist erforderlich</p>
         )}
       </div>
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Kategorie *
+          Kategorie * {isCategoryValid && <span className="text-green-600">✓</span>}
         </label>
         <select
           name="category"
           value={data.category}
           onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent ${
+            !isCategoryValid && !validation.valid ? "border-red-400 bg-red-50" : "border-gray-300"
+          }`}
         >
           <option value="">-- Bitte wählen --</option>
           {CATEGORIES.map((cat) => (
@@ -83,8 +92,8 @@ export default function ProcessFormStep1({
             </option>
           ))}
         </select>
-        {!data.category && validation.errors.some((e) => e.includes("category")) && (
-          <p className="text-sm text-red-600 mt-1">Die Kategorie ist erforderlich</p>
+        {!isCategoryValid && !validation.valid && (
+          <p className="text-sm text-red-600 mt-1">⚠️ Die Kategorie ist erforderlich</p>
         )}
       </div>
 

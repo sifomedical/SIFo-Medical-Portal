@@ -85,27 +85,34 @@ export default function CreateProcessPage() {
     switch (step) {
       case 1:
         return {
-          valid: Boolean(formData.title && formData.subtitle && formData.category),
+          valid: Boolean(formData.title && formData.title.trim() && formData.subtitle && formData.subtitle.trim() && formData.category),
           errors: [],
         };
       case 2:
+        const validGoals = formData.goals.filter((g) => g && g.trim()).length >= 2;
+        const validDescription = Boolean(formData.description && formData.description.trim());
         return {
-          valid: formData.goals.filter((g) => g && g.trim()).length >= 2,
-          errors: formData.description ? [] : ["description is required"],
+          valid: validGoals && validDescription,
+          errors: [],
         };
       case 3:
+        const validOwner = Boolean(formData.owner && formData.owner.trim());
+        const validFrequency = Boolean(formData.frequency);
+        const validTags = formData.tags.filter((t) => t && t.trim()).length >= 2;
         return {
-          valid: Boolean(formData.owner && formData.frequency),
-          errors: formData.tags.filter((t) => t && t.trim()).length >= 2 ? [] : ["tags error"],
+          valid: validOwner && validFrequency && validTags,
+          errors: [],
         };
       case 4:
+        const validSteps = formData.steps.filter((s) => s.title && s.title.trim() && s.description && s.description.trim()).length >= 2;
         return {
-          valid: formData.steps.filter((s) => s.title && s.description).length >= 2,
+          valid: validSteps,
           errors: [],
         };
       case 5:
+        const validTools = formData.tools.filter((t) => t.name && t.name.trim()).length >= 1;
         return {
-          valid: formData.tools.filter((t) => t.name && t.name.trim()).length >= 1,
+          valid: validTools,
           errors: [],
         };
       default:
