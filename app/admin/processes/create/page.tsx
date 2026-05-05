@@ -274,6 +274,9 @@ export default function CreateProcessPage() {
               }}
               onChange={handleFormChange}
               onValidate={() => validateStep(2)}
+              title={formData.title}
+              subtitle={formData.subtitle}
+              category={formData.category}
             />
           )}
 

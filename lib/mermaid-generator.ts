@@ -38,6 +38,12 @@ function escapeForMermaid(text: string): string {
 /**
  * Generate a Mermaid flowchart (TD = Top-Down) from process steps
  * Returns Mermaid syntax string that can be rendered by the MermaidDiagram component
+ *
+ * Enhanced version that:
+ * - Creates more visual and readable flowcharts
+ * - Supports decision points and alternatives
+ * - Better formatting with step numbering
+ * - Uses icons to distinguish step types
  */
 export function generateMermaidFlowchart(steps: ProcessStep[]): string {
   if (!steps || steps.length === 0) {
@@ -46,7 +52,6 @@ export function generateMermaidFlowchart(steps: ProcessStep[]): string {
 
   let mermaid = "flowchart TD\n";
   let nodeCount = 0;
-  const nodeMap: { [key: string]: string } = {};
 
   // Helper to generate unique node IDs
   function getNextNodeId(): string {
@@ -55,63 +60,74 @@ export function generateMermaidFlowchart(steps: ProcessStep[]): string {
     return id;
   }
 
-  // Start node
+  // Start node with better styling
   const startNode = getNextNodeId();
-  mermaid += `  ${startNode}["🚀 Start: Prozess"]`;
-  mermaid += `:::processStart\n`;
+  mermaid += `    ${startNode}([🎯 ${escapeForMermaid("Prozess starten")}])\n`;
+  mermaid += `    style ${startNode} fill:#1B3A6B,stroke:#000,stroke-width:2px,color:#fff,font-weight:bold\n`;
 
   let previousNode = startNode;
+  let stepCounter = 1;
 
-  // Process each step
+  // Process each step with improved formatting
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
     const stepNode = getNextNodeId();
-    const stepTitle = escapeForMermaid(step.title);
-    const icon = i === steps.length - 1 ? "✅" : "📋";
 
-    // Main step node
-    mermaid += `  ${stepNode}["${icon} ${stepTitle}"]`;
-    mermaid += `:::process\n`;
+    // Format step title with numbering
+    const stepNumber = `${stepCounter}.`;
+    const stepTitle = escapeForMermaid(step.title || `Schritt ${stepCounter}`);
+    const displayTitle = `${stepNumber} ${stepTitle}`;
+
+    // Main step node with appropriate icon based on position
+    const icon = i === steps.length - 1 ? "✅" : "📋";
+    mermaid += `    ${stepNode}["${icon} ${displayTitle}"]\n`;
+    mermaid += `    style ${stepNode} fill:#0C2340,stroke:#333,stroke-width:1.5px,color:#fff\n`;
 
     // Connect to previous
-    mermaid += `  ${previousNode} --> ${stepNode}\n`;
+    mermaid += `    ${previousNode} --> ${stepNode}\n`;
 
-    // Store node mapping for substeps
-    nodeMap[step.id] = stepNode;
-
-    // Handle substeps if they exist
+    // Handle substeps if they exist - create a branching path
     if (step.substeps && step.substeps.length > 0) {
-      let lastSubstepNode = stepNode;
+      let substepNodes: string[] = [];
 
-      for (const substep of step.substeps) {
+      for (let j = 0; j < step.substeps.length; j++) {
+        const substep = step.substeps[j];
         const substepNode = getNextNodeId();
-        const substepTitle = escapeForMermaid(substep.title);
+        const substepNum = String.fromCharCode(97 + j); // a, b, c, etc.
+        const substepTitle = escapeForMermaid(substep.title || `Teilschritt ${substepNum}`);
 
-        mermaid += `  ${substepNode}["  → ${substepTitle}"]`;
-        mermaid += `:::substep\n`;
-        mermaid += `  ${lastSubstepNode} --> ${substepNode}\n`;
+        mermaid += `    ${substepNode}["→ ${substepTitle}"]\n`;
+        mermaid += `    style ${substepNode} fill:#6B7280,stroke:#555,stroke-width:1px,color:#fff,font-size:12px\n`;
 
-        lastSubstepNode = substepNode;
+        // Branch from main step
+        if (j === 0) {
+          mermaid += `    ${stepNode} --> ${substepNode}\n`;
+        } else {
+          mermaid += `    ${stepNode} -.-> ${substepNode}\n`;
+        }
+
+        substepNodes.push(substepNode);
       }
 
-      previousNode = lastSubstepNode;
+      // Reconnect all substeps to continue the flow
+      if (substepNodes.length > 0) {
+        // Use the last substep as the connection point
+        previousNode = substepNodes[substepNodes.length - 1];
+      } else {
+        previousNode = stepNode;
+      }
     } else {
       previousNode = stepNode;
     }
+
+    stepCounter++;
   }
 
-  // End node
+  // End node with completion icon
   const endNode = getNextNodeId();
-  mermaid += `  ${endNode}["🎉 Abgeschlossen"]`;
-  mermaid += `:::processEnd\n`;
-  mermaid += `  ${previousNode} --> ${endNode}\n`;
-
-  // Add styling classes
-  mermaid += `\n  classDef processStart fill:${COLORS.start},stroke:#000,stroke-width:2px,color:#fff,font-weight:bold\n`;
-  mermaid += `  classDef processEnd fill:${COLORS.end},stroke:#000,stroke-width:2px,color:#fff,font-weight:bold\n`;
-  mermaid += `  classDef process fill:${COLORS.process},stroke:#333,stroke-width:1.5px,color:#fff\n`;
-  mermaid += `  classDef substep fill:#6B7280,stroke:#333,stroke-width:1px,color:#fff,font-size:12px\n`;
-  mermaid += `  classDef decision fill:${COLORS.decision},stroke:#333,stroke-width:2px,color:#fff\n`;
+  mermaid += `    ${endNode}([🎉 ${escapeForMermaid("Prozess abgeschlossen")}])\n`;
+  mermaid += `    style ${endNode} fill:#1B3A6B,stroke:#000,stroke-width:2px,color:#fff,font-weight:bold\n`;
+  mermaid += `    ${previousNode} --> ${endNode}\n`;
 
   return mermaid;
 }

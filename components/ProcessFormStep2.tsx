@@ -1,7 +1,7 @@
 "use client";
 
-import { ChangeEvent } from "react";
-import { X, Plus } from "lucide-react";
+import { ChangeEvent, useState } from "react";
+import { X, Plus, Loader2, Sparkles } from "lucide-react";
 
 interface Step2Data {
   description: string;
@@ -12,17 +12,63 @@ interface ProcessFormStep2Props {
   data: Step2Data;
   onChange: (field: keyof Step2Data, value: string | string[]) => void;
   onValidate: () => { valid: boolean; errors: string[] };
+  title?: string;
+  subtitle?: string;
+  category?: string;
 }
 
 export default function ProcessFormStep2({
   data,
   onChange,
   onValidate,
+  title,
+  subtitle,
+  category,
 }: ProcessFormStep2Props) {
   const validation = onValidate();
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhanceError, setEnhanceError] = useState<string | null>(null);
 
   const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     onChange("description", e.target.value);
+  };
+
+  const handleEnhanceDescription = async () => {
+    if (!title || !subtitle) {
+      setEnhanceError("Bitte fülle zuerst Titel und Untertitel aus");
+      return;
+    }
+
+    setIsEnhancing(true);
+    setEnhanceError(null);
+
+    try {
+      const response = await fetch("/api/admin/processes/enhance-description", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          subtitle,
+          initialDescription: data.description,
+          category,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        setEnhanceError(result.message || "Fehler beim Verbessern der Beschreibung");
+        return;
+      }
+
+      onChange("description", result.enhancedDescription);
+    } catch (error: any) {
+      setEnhanceError(error.message || "Fehler beim Verbessern der Beschreibung");
+    } finally {
+      setIsEnhancing(false);
+    }
   };
 
   const handleGoalChange = (index: number, value: string) => {
@@ -46,9 +92,28 @@ export default function ProcessFormStep2({
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Beschreibung (2-3 Sätze) *
-        </label>
+        <div className="flex justify-between items-center mb-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Beschreibung (2-3 Sätze) *
+          </label>
+          <button
+            type="button"
+            onClick={handleEnhanceDescription}
+            disabled={isEnhancing || !title || !subtitle}
+            className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title={!title || !subtitle ? "Bitte fülle erst Titel und Untertitel aus" : "Mit KI verbessern"}
+          >
+            {isEnhancing ? (
+              <>
+                <Loader2 size={16} className="animate-spin" /> Verbessert...
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} /> Mit KI verbessern
+              </>
+            )}
+          </button>
+        </div>
         <textarea
           value={data.description}
           onChange={handleDescriptionChange}
@@ -58,6 +123,9 @@ export default function ProcessFormStep2({
         />
         {descriptionError && (
           <p className="text-sm text-red-600 mt-1">Die Beschreibung ist erforderlich</p>
+        )}
+        {enhanceError && (
+          <p className="text-sm text-purple-600 mt-1">⚠️ {enhanceError}</p>
         )}
       </div>
 
