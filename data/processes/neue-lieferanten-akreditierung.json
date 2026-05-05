@@ -1,0 +1,112 @@
+{
+  "id": "process-supplier-accreditation",
+  "slug": "neue-lieferanten-akreditierung",
+  "title": "Neue Lieferanten-Akreditierung und Freigabe",
+  "subtitle": "Überprüfung und Genehmigung neuer Lieferanten",
+  "category": "operations",
+  "description": "Strukturierter Prozess zur Überprüfung, Bewertung und Freigabe neuer Lieferanten, um sicherzustellen, dass nur zertifizierte und zuverlässige Partner mit SIFo Medical arbeiten.",
+  "goals": [
+    "Nur zertifizierte und zuverlässige Lieferanten akreditieren",
+    "Qualitätsstandards und Compliance sicherstellen",
+    "Schnelle und effiziente Freigabe neuer Lieferanten ermöglichen"
+  ],
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Lieferanten-Anfrage erhalten & dokumentieren",
+      "description": "Neue Lieferanten-Anfrage wird empfangen und alle relevanten Daten werden im System dokumentiert",
+      "tools": ["Odoo", "Email"],
+      "tips": [
+        "Alle erforderlichen Informationen des Lieferanten sammeln",
+        "Kontaktdaten und Unternehmensdetails verifizieren"
+      ]
+    },
+    {
+      "id": "step-2",
+      "title": "Qualitätszertifikate & Referenzen prüfen",
+      "description": "Zertifikate (ISO, GMP, etc.) und Referenzen von bestehenden Kunden werden überprüft",
+      "tools": ["Dokumentenverwaltung", "Excel"],
+      "tips": [
+        "Gültigkeit von Zertifikaten prüfen",
+        "Mindestens 2 Referenzen einholen",
+        "Audit-Reports überprüfen falls vorhanden"
+      ],
+      "substeps": [
+        {
+          "id": "step-2a",
+          "title": "Zertifikate validieren",
+          "description": "Überprüfe ISO, GMP und andere relevante Zertifikate",
+          "tools": []
+        },
+        {
+          "id": "step-2b",
+          "title": "Referenzen kontaktieren",
+          "description": "Frage bestehende Kunden nach ihren Erfahrungen",
+          "tools": ["Email"]
+        }
+      ]
+    },
+    {
+      "id": "step-3",
+      "title": "Preise & Konditionen verhandeln",
+      "description": "Preise, Lieferzeiten und Zahlungsbedingungen werden mit dem Lieferanten abgestimmt",
+      "tools": ["Odoo", "Email"],
+      "tips": [
+        "Marktpreise vergleichen",
+        "Lieferzeiten prüfen",
+        "Rabatte und Mengenrabatte verhandeln"
+      ]
+    },
+    {
+      "id": "step-4",
+      "title": "Interne Freigabe durch Qualität/Einkauf",
+      "description": "Qualität und Einkauf geben den neuen Lieferanten intern frei oder lehnen ab",
+      "tools": ["Odoo"],
+      "tips": [
+        "Freigabe-Checkliste durchgehen",
+        "Risikobewertung durchführen",
+        "Genehmigung dokumentieren"
+      ]
+    },
+    {
+      "id": "step-5",
+      "title": "Lieferant im System aktivieren",
+      "description": "Der neue Lieferant wird in Odoo und allen relevanten Systemen aktiviert und ist damit freigegeben",
+      "tools": ["Odoo"],
+      "tips": [
+        "Lieferantenstammdaten im System aktualisieren",
+        "Zugänge und Berechtigungen setzen",
+        "Bestätigung an Lieferant senden"
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "name": "Odoo",
+      "url": "https://sifo-gmbh.odoo.com/web",
+      "icon": "🔧"
+    },
+    {
+      "name": "Email",
+      "url": "mailto:contact@sifo.de",
+      "icon": "📧"
+    },
+    {
+      "name": "Dokumentenverwaltung",
+      "url": "https://drive.google.com",
+      "icon": "📁"
+    },
+    {
+      "name": "Excel/Tabellen",
+      "url": "https://sheets.google.com",
+      "icon": "📊"
+    }
+  ],
+  "owner": "Einkaufsleiter / Qualitätsmanagement",
+  "frequency": "Bei Bedarf (durchschnittlich 2-3x pro Monat)",
+  "lastUpdated": "2026-04-30T20:45:00Z",
+  "mermaidDiagram": "graph TD\n  A[\"📋 Lieferanten-Anfrage erhalten\"] --> B[\"✓ Zertifikate & Referenzen prüfen\"]\n  B --> B1[\"Zertifikate validieren\"]\n  B --> B2[\"Referenzen kontaktieren\"]\n  B1 --> C[\"💰 Preise & Konditionen verhandeln\"]\n  B2 --> C\n  C --> D[\"🔒 Interne Freigabe\"]\n  D --> E[\"✅ Lieferant aktivieren\"]\n  E --> F[\"🎉 Abgeschlossen\"]",
+  "tags": ["lieferanten", "akreditierung", "qualität", "compliance", "operations"],
+  "status": "active",
+  "processVideoUrl": null
+}

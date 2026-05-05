@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { getUserByEmail, createUser } from "@/lib/db-users";
 
 const ALLOWED_DOMAINS = (process.env.ALLOWED_EMAIL_DOMAINS || "").split(",").filter(Boolean);
@@ -14,13 +15,49 @@ function isEmailAllowed(email: string): boolean {
   return false;
 }
 
+const providers: any[] = [
+  GoogleProvider({
+    clientId: process.env.AUTH_GOOGLE_ID || "",
+    clientSecret: process.env.AUTH_GOOGLE_SECRET || "",
+  }),
+];
+
+// Development-only: Add credentials provider for testing
+if (process.env.NODE_ENV === "development") {
+  providers.push(
+    CredentialsProvider({
+      name: "Test Account",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        // Allow test user in development
+        if (credentials?.email === "test@sifo-medical.de") {
+          return {
+            id: "dev-test-user",
+            email: "test@sifo-medical.de",
+            name: "Test User",
+            image: null,
+          };
+        }
+        // Allow admin user for testing
+        if (credentials?.email === ADMIN_EMAIL) {
+          return {
+            id: "dev-admin-user",
+            email: ADMIN_EMAIL,
+            name: "Admin User",
+            image: null,
+          };
+        }
+        return null;
+      },
+    })
+  );
+}
+
 const handler = NextAuth({
-  providers: [
-    GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID || "",
-      clientSecret: process.env.AUTH_GOOGLE_SECRET || "",
-    }),
-  ],
+  providers,
   pages: {
     signIn: "/login",
     error: "/login",

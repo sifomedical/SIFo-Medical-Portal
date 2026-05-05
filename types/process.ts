@@ -45,6 +45,14 @@ export interface Process {
   processVideoUrl?: string;
 }
 
+export interface DraftProcess extends Process {
+  createdBy: string;
+  createdAt: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  editedAt?: string;
+}
+
 export interface Category {
   id: CategoryId;
   title: string;
