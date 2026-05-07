@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Mic, Square, AlertCircle } from 'lucide-react'
+import { Mic, Square, AlertCircle, Loader } from 'lucide-react'
 
 interface VoiceInputProps {
   onTranscriptChange: (transcript: string) => void
@@ -9,136 +9,145 @@ interface VoiceInputProps {
 }
 
 export default function VoiceInput({ onTranscriptChange, isDisabled = false }: VoiceInputProps) {
-  const [isListening, setIsListening] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [recordingTime, setRecordingTime] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [isTranscribing, setIsTranscribing] = useState(false)
   const [isBrowserSupported, setIsBrowserSupported] = useState(true)
 
-  const recognitionRef = useRef<any>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const transcriptRef = useRef<string>('')
-  const isListeningRef = useRef<boolean>(false)
   const maxRecordingDuration = 120
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition
+    const hasMediaRecorder = typeof MediaRecorder !== 'undefined'
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognition || !hasMediaRecorder) {
       setIsBrowserSupported(false)
       return
     }
+  }, [])
 
-    recognitionRef.current = new SpeechRecognition()
-    const recognition = recognitionRef.current
-
-    recognition.continuous = true
-    recognition.interimResults = true
-    recognition.lang = 'de-DE'
-    recognition.maxAlternatives = 1
-
-    recognition.onstart = () => {
-      isListeningRef.current = true
-      setIsListening(true)
-      setError(null)
-      setRecordingTime(0)
-      transcriptRef.current = ''
-    }
-
-    recognition.onresult = (event: any) => {
-      let interimTranscript = ''
-      let finalTranscript = ''
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcriptSegment = event.results[i][0].transcript
-
-        if (event.results[i].isFinal) {
-          finalTranscript += transcriptSegment + ' '
-        } else {
-          interimTranscript += transcriptSegment
-        }
-      }
-
-      if (finalTranscript) {
-        transcriptRef.current += finalTranscript
-      }
-
-      const displayText = (transcriptRef.current + interimTranscript).trim()
-      setTranscript(displayText)
-      onTranscriptChange(displayText)
-    }
-
-    recognition.onerror = (event: any) => {
-      let errorMessage = 'Spracherkennungsfehler'
-
-      switch (event.error) {
-        case 'no-speech':
-          errorMessage = 'Keine Sprache erkannt. Versuche erneut.'
-          break
-        case 'network':
-          errorMessage = 'Netzwerkfehler. Überprüfe deine Internetverbindung.'
-          break
-        case 'permission-denied':
-          errorMessage = 'Bitte erlaube Mikrophon-Zugriff in den Browsereinstellungen.'
-          break
-        case 'not-allowed':
-          errorMessage = 'Mikrophon-Zugriff wurde verweigert.'
-          break
-        case 'aborted':
-          errorMessage = 'Aufnahme wurde abgebrochen. Versuche erneut.'
-          break
-        default:
-          errorMessage = `Fehler: ${event.error}`
-      }
-
-      setError(errorMessage)
-      isListeningRef.current = false
-      setIsListening(false)
-    }
-
-    recognition.onend = () => {
-      if (isListeningRef.current) {
-        try {
-          recognition.start()
-        } catch (e) {
-        }
-      }
-    }
-
-    return () => {
-      if (recognition) {
-        recognition.abort()
-      }
-    }
-  }, [onTranscriptChange])
-
-  const startRecording = () => {
-    if (!recognitionRef.current) return
-
-    setTranscript('')
+  const startRecording = async () => {
     setError(null)
+    setTranscript('')
+    audioChunksRef.current = []
     setRecordingTime(0)
 
-    recognitionRef.current.start()
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
 
-    timerRef.current = setInterval(() => {
-      setRecordingTime((prev) => {
-        if (prev >= maxRecordingDuration) {
-          stopRecording()
-          return maxRecordingDuration
+      mediaRecorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
         }
-        return prev + 1
-      })
-    }, 1000)
+      }
+
+      mediaRecorder.onstop = async () => {
+        setIsRecording(false)
+        if (timerRef.current) clearInterval(timerRef.current)
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        await transcribeAudio(audioBlob)
+
+        stream.getTracks().forEach((track) => track.stop())
+      }
+
+      mediaRecorder.onerror = (event: any) => {
+        setError('Fehler beim Aufzeichnen: ' + event.error)
+        setIsRecording(false)
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => {
+          if (prev >= maxRecordingDuration) {
+            stopRecording()
+            return maxRecordingDuration
+          }
+          return prev + 1
+        })
+      }, 1000)
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        setError('Bitte erlaube Mikrophon-Zugriff in den Browsereinstellungen.')
+      } else if (err.name === 'NotFoundError') {
+        setError('Kein Mikrophon gefunden.')
+      } else {
+        setError('Fehler beim Zugriff auf Mikrophon: ' + err.message)
+      }
+    }
   }
 
   const stopRecording = () => {
-    isListeningRef.current = false
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
     }
-    if (timerRef.current) clearInterval(timerRef.current)
-    setIsListening(false)
+  }
+
+  const transcribeAudio = async (audioBlob: Blob) => {
+    setIsTranscribing(true)
+    setError(null)
+
+    try {
+      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition
+      const recognition = new SpeechRecognition()
+
+      recognition.lang = 'de-DE'
+      recognition.continuous = false
+      recognition.interimResults = false
+
+      let finalTranscript = ''
+
+      recognition.onresult = (event: any) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' '
+          }
+        }
+      }
+
+      recognition.onerror = (event: any) => {
+        if (event.error !== 'no-speech') {
+          setError('Fehler bei der Transkription: ' + event.error)
+        }
+      }
+
+      recognition.onend = () => {
+        const result = finalTranscript.trim()
+        setTranscript(result)
+        onTranscriptChange(result)
+        setIsTranscribing(false)
+      }
+
+      const audioUrl = URL.createObjectURL(audioBlob)
+      const audio = new Audio(audioUrl)
+
+      audio.oncanplay = () => {
+        recognition.start()
+      }
+
+      audio.onended = () => {
+        recognition.stop()
+        URL.revokeObjectURL(audioUrl)
+      }
+
+      audio.play().catch(() => {
+        setError('Fehler beim Abspielen der Aufnahme.')
+        setIsTranscribing(false)
+      })
+    } catch (err: any) {
+      setError('Fehler bei der Transkription: ' + err.message)
+      setIsTranscribing(false)
+    }
   }
 
   const clearTranscript = () => {
@@ -165,7 +174,7 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
     <div className="space-y-4">
       {/* Recording Controls */}
       <div className="rounded-lg border-2 border-dashed border-[#00A68B]/30 bg-[#00A68B]/5 p-8 text-center">
-        {!isListening ? (
+        {!isRecording && !isTranscribing ? (
           <button
             onClick={startRecording}
             disabled={isDisabled}
@@ -176,17 +185,17 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
             </div>
             <div>
               <p className="font-semibold text-[#0C2340]">Sprachaufnahme starten</p>
-              <p className="text-xs text-[#6A7A8B]">Klick um Spracherkennung zu starten</p>
+              <p className="text-xs text-[#6A7A8B]">Klick um Aufnahme zu starten</p>
             </div>
           </button>
-        ) : (
+        ) : isRecording ? (
           <div className="flex flex-col items-center gap-3">
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 animate-pulse rounded-full bg-red-500" />
               <span className="font-mono text-sm font-semibold text-[#0C2340]">{timeDisplay}</span>
-              <div className="h-3 w-3 animate-pulse rounded-full bg-red-500 animation-delay-200" />
+              <div className="h-3 w-3 animate-pulse rounded-full bg-red-500" />
             </div>
-            <p className="text-sm text-[#6A7A8B]">Spreche jetzt...</p>
+            <p className="text-sm text-[#6A7A8B]">Aufnahme läuft...</p>
             <button
               onClick={stopRecording}
               className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
@@ -194,6 +203,14 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
               <Square className="h-4 w-4" />
               Stopp
             </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            <div className="rounded-full bg-[#00A68B]/10 p-4">
+              <Loader className="h-8 w-8 animate-spin text-[#00A68B]" />
+            </div>
+            <p className="font-semibold text-[#0C2340]">Transkribiere Aufnahme...</p>
+            <p className="text-xs text-[#6A7A8B]">Dies kann bis zu 30 Sekunden dauern.</p>
           </div>
         )}
       </div>
