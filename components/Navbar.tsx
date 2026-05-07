@@ -26,10 +26,10 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0C2340] to-[#1B3A6B] flex items-center justify-center p-1">
+          <Link href="/" className="flex items-center gap-3 group hover:opacity-80 transition-opacity">
+            <div className="w-11 h-11 rounded-lg bg-[#0C2340] flex items-center justify-center p-2 border-2 border-[#00A68B] shadow-sm group-hover:shadow-md transition-shadow">
               <Image
-                src="/signet.png"
+                src="/signet-white.png"
                 alt="SIFo Medical"
                 width={32}
                 height={32}
