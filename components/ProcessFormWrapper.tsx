@@ -24,11 +24,15 @@ const STEPS = [
 interface ProcessFormWrapperProps {
   initialData?: Partial<Process>
   onSuccess?: (processId: string) => void
+  showBackButton?: boolean
+  onBack?: () => void
 }
 
 export default function ProcessFormWrapper({
   initialData,
   onSuccess,
+  showBackButton = false,
+  onBack,
 }: ProcessFormWrapperProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
@@ -160,6 +164,8 @@ export default function ProcessFormWrapper({
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
       setError(null)
+    } else if (currentStep === 1 && showBackButton && onBack) {
+      onBack()
     }
   }
 
@@ -283,7 +289,7 @@ export default function ProcessFormWrapper({
         <div className="flex gap-3 mt-8 justify-between">
           <button
             onClick={handleBack}
-            disabled={currentStep === 1}
+            disabled={currentStep === 1 && !showBackButton}
             className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             ← Zurück
