@@ -3,7 +3,8 @@ import { CATEGORIES } from "@/types/process";
 import { ALL_PROCESSES, getProcessesByCategory } from "@/data/processes";
 import CategoryCard from "@/components/CategoryCard";
 import ProcessCard from "@/components/ProcessCard";
-import { BookOpen, Layers, TrendingUp } from "lucide-react";
+import { BookOpen, Layers, TrendingUp, Plus } from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const session = await getServerSession();
@@ -24,14 +25,25 @@ export default async function DashboardPage() {
         <div className="absolute -bottom-20 left-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
 
         <div className="relative z-10">
-          <p className="text-[#D2EDE7] text-sm font-light mb-2">
-            Willkommen zurück, {firstName} 👋
-          </p>
-          <h1 className="text-4xl sm:text-5xl font-semibold mb-4">
-            SIFo Medical
-            <br />
-            <span className="text-[#D2EDE7] font-light">Process Portal</span>
-          </h1>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+            <div>
+              <p className="text-[#D2EDE7] text-sm font-light mb-2">
+                Willkommen zurück, {firstName} 👋
+              </p>
+              <h1 className="text-4xl sm:text-5xl font-semibold mb-4">
+                SIFo Medical
+                <br />
+                <span className="text-[#D2EDE7] font-light">Process Portal</span>
+              </h1>
+            </div>
+            <Link
+              href="/create-process"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#0C2340] rounded-lg font-semibold hover:bg-[#D2EDE7] transition-colors whitespace-nowrap h-fit"
+            >
+              <Plus className="w-5 h-5" />
+              Neuer Prozess
+            </Link>
+          </div>
           <p className="text-[#D2EDE7]/90 max-w-xl text-sm sm:text-base leading-relaxed">
             Alle Unternehmens-Prozesse an einem Ort – übersichtlich dokumentiert,
             grafisch dargestellt und jederzeit abrufbar.

@@ -10,11 +10,16 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.94.0",
+    "@supabase/supabase-js": "^2.41.0",
+    "@supabase/ssr": "^0.10.2",
     "@vercel/kv": "^3.0.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "lucide-react": "^1.14.0",
     "mermaid": "^11.14.0",
     "next": "16.2.4",
     "next-auth": "^4.24.14",
+    "resend": "^6.12.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "sql.js": "^1.14.1"

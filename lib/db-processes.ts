@@ -17,8 +17,8 @@ export async function saveDraftProcess(
     ...process,
     createdBy,
     createdAt: now,
-    approvedBy: null,
-    approvedAt: null,
+    approvedBy: undefined,
+    approvedAt: undefined,
     editedAt: now,
   };
 

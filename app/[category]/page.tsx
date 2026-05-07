@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CATEGORIES, CategoryId } from "@/types/process";
 import { getProcessesByCategory } from "@/data/processes";
 import ProcessCard from "@/components/ProcessCard";
+import CategoryPageClient from "@/components/CategoryPageClient";
 import { ArrowLeft } from "lucide-react";
 
 interface Props {
@@ -47,25 +48,8 @@ export default async function CategoryPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Processes Grid */}
-      {processes.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {processes.map((process) => (
-            <ProcessCard key={process.id} process={process} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-20 bg-white rounded-2xl border border-gray-200">
-          <span className="text-5xl mb-4 block">📋</span>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
-            Noch keine Prozesse dokumentiert
-          </h3>
-          <p className="text-gray-500 text-sm max-w-sm mx-auto">
-            Dieser Bereich wird gerade aufgebaut. Prozesse werden laufend
-            ergänzt.
-          </p>
-        </div>
-      )}
+      {/* Client-side filtering */}
+      <CategoryPageClient processes={processes} category={cat} />
     </div>
   );
 }

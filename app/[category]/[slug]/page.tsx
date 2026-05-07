@@ -4,6 +4,8 @@ import { CATEGORIES, CategoryId } from "@/types/process";
 import { getProcessBySlug, getAllSlugs } from "@/data/processes";
 import StepAccordion from "@/components/StepAccordion";
 import MermaidDiagram from "@/components/MermaidDiagram";
+import ProcessExporter from "@/components/ProcessExporter";
+import AttachmentSection from "@/components/AttachmentSection";
 import { ArrowLeft, Clock, User, Tag, ExternalLink, Target } from "lucide-react";
 
 interface Props {
@@ -54,20 +56,21 @@ export default async function ProcessDetailPage({ params }: Props) {
 
           <p className="text-gray-700 leading-relaxed mt-4">{proc.description}</p>
 
-          {/* Video Link */}
-          {proc.processVideoUrl && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+          {/* Actions */}
+          <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-3">
+            <ProcessExporter process={proc} />
+            {proc.processVideoUrl && (
               <a
                 href={proc.processVideoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#00A68B] hover:bg-[#008B72] text-white rounded-lg font-medium transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#00A68B] hover:bg-[#008B72] text-white rounded-lg font-medium transition-colors"
               >
                 <span>🎬</span>
                 Video-Anleitung
               </a>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Meta */}
           <div className="flex flex-wrap gap-4 mt-5 pt-5 border-t border-gray-100 text-sm text-gray-500">
@@ -116,6 +119,9 @@ export default async function ProcessDetailPage({ params }: Props) {
               <StepAccordion steps={proc.steps} />
             </div>
           </div>
+
+          {/* Attachments */}
+          <AttachmentSection processId={proc.id} isAdmin={false} />
         </div>
 
         {/* Sidebar */}

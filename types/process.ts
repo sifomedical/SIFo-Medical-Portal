@@ -27,30 +27,82 @@ export type CategoryId =
   | "finance";
 
 export interface Process {
+  // IDs and Metadata
   id: string;
   slug: string;
+  status: "active" | "draft" | "archived";
+
+  // 1. Purpose & Scope
   title: string;
   subtitle: string;
   category: CategoryId;
   description: string;
-  goals: string[];
+  purpose?: string;
+  scope?: string;
+
+  // 2. Responsibilities & Definitions
+  responsibilities?: string[];
+  definitions?: Record<string, string>;
+
+  // 3. Inputs
+  inputs?: string[];
+
+  // 4. Process Steps
   steps: ProcessStep[];
+
+  // 5. Risks & Controls
+  risksAndControls?: Array<{ risk: string; control: string }>;
+
+  // 6. Outputs
+  outputs?: string[];
+
+  // 7. Records
+  records?: string[];
+
+  // Goals and Tools
+  goals: string[];
   tools: ProcessTool[];
+
+  // Metadata
   owner: string;
   frequency: string;
-  lastUpdated: string;
-  mermaidDiagram: string;
   tags: string[];
-  status: "active" | "draft" | "archived";
+
+  // 8. Flowchart (Mermaid)
+  mermaidDiagram: string;
+
+  // Media
   processVideoUrl?: string;
+
+  // Timestamps
+  lastUpdated: string;
+  createdAt?: string;
+  updatedAt?: string;
+  approvedAt?: string;
+  approvedBy?: string;
+
+  // Version tracking
+  versionNumber?: number;
+}
+
+export interface Attachment {
+  id: string;
+  processId: string;
+  fileName: string;
+  fileType: "pdf" | "image" | "document" | "video" | "other";
+  fileSize: number;
+  storagePath: string;
+  uploadedBy: string;
+  createdAt: string;
 }
 
 export interface DraftProcess extends Process {
   createdBy: string;
   createdAt: string;
-  approvedBy?: string | null;
-  approvedAt?: string | null;
+  approvedBy?: string;
+  approvedAt?: string;
   editedAt?: string;
+  attachments?: Attachment[];
 }
 
 export interface Category {

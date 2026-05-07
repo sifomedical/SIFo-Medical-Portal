@@ -1,130 +1,79 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { saveDraftProcess } from "@/lib/db-processes";
-import { Process } from "@/types/process";
+import { createClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from 'next/server'
 
-/**
- * POST /api/processes/draft
- * Save a new draft process
- * Requires: authenticated user
- */
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = (await getServerSession()) as any;
-    if (!session || !session.user?.email) {
+    const body = await request.json()
+
+    // Generate ID and slug
+    const processId = crypto.randomUUID()
+    const slug = body.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 50)
+
+    // Get user from session (if available)
+    const createdBy = body.createdBy || 'anonymous'
+
+    // Insert process into Supabase
+    const { data, error } = await supabase
+      .from('processes')
+      .insert([
+        {
+          id: processId,
+          slug,
+          title: body.title,
+          subtitle: body.subtitle,
+          category: body.category,
+          description: body.description,
+          purpose: body.purpose,
+          scope: body.scope,
+          responsibilities: body.responsibilities || [],
+          definitions: body.definitions || {},
+          inputs: body.inputs || [],
+          steps: body.steps || [],
+          risks_and_controls: body.risksAndControls || [],
+          outputs: body.outputs || [],
+          records: body.records || [],
+          tools: body.tools || [],
+          goals: body.goals || [],
+          tags: body.tags || [],
+          owner: body.owner,
+          frequency: body.frequency,
+          process_video_url: body.processVideoUrl,
+          mermaid_diagram: body.mermaidDiagram || '',
+          status: 'draft',
+          created_by: createdBy,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+
+    if (error) {
+      console.error('Database error:', error)
       return NextResponse.json(
-        { error: "Unauthorized - must be logged in" },
-        { status: 401 }
-      );
+        { error: 'Failed to create process draft' },
+        { status: 500 }
+      )
     }
 
-    // Parse request body
-    const processData = (await request.json()) as Process;
-
-    // Validate required fields
-    const requiredFields = [
-      "id",
-      "slug",
-      "title",
-      "subtitle",
-      "category",
-      "description",
-      "goals",
-      "steps",
-      "tools",
-      "owner",
-      "frequency",
-      "lastUpdated",
-      "mermaidDiagram",
-      "tags",
-    ];
-
-    for (const field of requiredFields) {
-      if (!processData[field as keyof Process]) {
-        return NextResponse.json(
-          { error: `Missing required field: ${field}` },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Ensure status is draft
-    processData.status = "draft";
-    processData.lastUpdated = new Date().toISOString();
-
-    // Save to KV
-    await saveDraftProcess(processData, session.user.email);
-
-    return NextResponse.json(
-      {
-        success: true,
-        slug: processData.slug,
-        message: "Draft process saved successfully",
-        status: "pending_approval",
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      id: processId,
+      slug,
+      message: 'Process draft created successfully',
+    })
   } catch (error) {
-    console.error("Error saving draft process:", error);
+    console.error('Error creating process draft:', error)
     return NextResponse.json(
-      { error: "Failed to save draft process" },
+      { error: 'Internal server error' },
       { status: 500 }
-    );
-  }
-}
-
-/**
- * GET /api/processes/draft?slug=...
- * Get a specific draft process (creator or admin only)
- */
-export async function GET(request: NextRequest) {
-  try {
-    const session = (await getServerSession()) as any;
-    if (!session || !session.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const slug = request.nextUrl.searchParams.get("slug");
-    if (!slug) {
-      return NextResponse.json(
-        { error: "slug parameter required" },
-        { status: 400 }
-      );
-    }
-
-    const { getDraftProcess } = await import("@/lib/db-processes");
-    const draftProcess = await getDraftProcess(slug);
-
-    if (!draftProcess) {
-      return NextResponse.json(
-        { error: "Draft process not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if user is creator or admin
-    const isAdmin = session.user.email === process.env.ADMIN_EMAIL;
-    const isCreator =
-      draftProcess.createdBy.toLowerCase() ===
-      session.user.email.toLowerCase();
-
-    if (!isAdmin && !isCreator) {
-      return NextResponse.json(
-        { error: "Forbidden - not creator or admin" },
-        { status: 403 }
-      );
-    }
-
-    return NextResponse.json(draftProcess, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching draft process:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch draft process" },
-      { status: 500 }
-    );
+    )
   }
 }

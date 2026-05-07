@@ -50,7 +50,7 @@ export default function ProcessFormStepper({
       </div>
 
       {/* Step labels */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-0">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 md:gap-0">
         {steps.map((step) => (
           <button
             key={step.id}

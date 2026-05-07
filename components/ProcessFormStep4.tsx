@@ -1,17 +1,23 @@
-"use client";
+'use client'
 
-import { ChangeEvent } from "react";
-import { X, Plus, ChevronDown, ChevronUp } from "lucide-react";
-import { ProcessStep } from "@/types/process";
+import { useState } from 'react'
+import { Plus, Trash2 } from 'lucide-react'
+
+interface RiskControl {
+  risk: string
+  control: string
+}
 
 interface Step4Data {
-  steps: ProcessStep[];
+  risksAndControls: RiskControl[]
+  outputs: string[]
+  records: string[]
 }
 
 interface ProcessFormStep4Props {
-  data: Step4Data;
-  onChange: (field: string, value: any) => void;
-  onValidate: () => { valid: boolean; errors: string[] };
+  data: Step4Data
+  onChange: (field: keyof Step4Data, value: RiskControl[] | string[]) => void
+  onValidate: () => { valid: boolean; errors: string[] }
 }
 
 export default function ProcessFormStep4({
@@ -19,194 +25,245 @@ export default function ProcessFormStep4({
   onChange,
   onValidate,
 }: ProcessFormStep4Props) {
-  const validation = onValidate();
-  const stepsError = validation.errors.find((e) => e.includes("steps"));
+  const [newRisk, setNewRisk] = useState('')
+  const [newControl, setNewControl] = useState('')
+  const [newOutput, setNewOutput] = useState('')
+  const [newRecord, setNewRecord] = useState('')
 
-  const updateStep = (index: number, field: string, value: any) => {
-    const newSteps = [...data.steps];
-    newSteps[index] = {
-      ...newSteps[index],
-      [field]: value,
-    };
-    onChange("steps", newSteps);
-  };
+  const validation = onValidate()
+  const isRisksValid = (data.risksAndControls?.length || 0) > 0
+  const isOutputsValid = (data.outputs?.length || 0) > 0
+  const isRecordsValid = (data.records?.length || 0) > 0
 
-  const updateSubstep = (stepIndex: number, substepIndex: number, field: string, value: string) => {
-    const newSteps = [...data.steps];
-    if (!newSteps[stepIndex].substeps) {
-      newSteps[stepIndex].substeps = [];
+  const handleAddRisk = () => {
+    if (newRisk.trim() && newControl.trim()) {
+      onChange('risksAndControls', [
+        ...(data.risksAndControls || []),
+        { risk: newRisk.trim(), control: newControl.trim() },
+      ])
+      setNewRisk('')
+      setNewControl('')
     }
-    newSteps[stepIndex].substeps![substepIndex] = {
-      ...newSteps[stepIndex].substeps![substepIndex],
-      id: `substep-${stepIndex}-${substepIndex}`,
-      [field]: value,
-    };
-    onChange("steps", newSteps);
-  };
+  }
 
-  const addStep = () => {
-    const newStep: ProcessStep = {
-      id: `step-${data.steps.length + 1}`,
-      title: "",
-      description: "",
-    };
-    onChange("steps", [...data.steps, newStep]);
-  };
+  const handleRemoveRisk = (index: number) => {
+    const updated = (data.risksAndControls || []).filter((_, i) => i !== index)
+    onChange('risksAndControls', updated)
+  }
 
-  const removeStep = (index: number) => {
-    const newSteps = data.steps.filter((_, i) => i !== index);
-    onChange("steps", newSteps);
-  };
-
-  const addSubstep = (stepIndex: number) => {
-    const newSteps = [...data.steps];
-    if (!newSteps[stepIndex].substeps) {
-      newSteps[stepIndex].substeps = [];
+  const handleAddOutput = () => {
+    if (newOutput.trim()) {
+      onChange('outputs', [...(data.outputs || []), newOutput.trim()])
+      setNewOutput('')
     }
-    newSteps[stepIndex].substeps!.push({
-      id: `substep-${stepIndex}-${newSteps[stepIndex].substeps!.length}`,
-      title: "",
-      description: "",
-    });
-    onChange("steps", newSteps);
-  };
+  }
 
-  const removeSubstep = (stepIndex: number, substepIndex: number) => {
-    const newSteps = [...data.steps];
-    if (newSteps[stepIndex].substeps) {
-      newSteps[stepIndex].substeps = newSteps[stepIndex].substeps!.filter(
-        (_, i) => i !== substepIndex
-      );
+  const handleRemoveOutput = (index: number) => {
+    const updated = (data.outputs || []).filter((_, i) => i !== index)
+    onChange('outputs', updated)
+  }
+
+  const handleAddRecord = () => {
+    if (newRecord.trim()) {
+      onChange('records', [...(data.records || []), newRecord.trim()])
+      setNewRecord('')
     }
-    onChange("steps", newSteps);
-  };
+  }
+
+  const handleRemoveRecord = (index: number) => {
+    const updated = (data.records || []).filter((_, i) => i !== index)
+    onChange('records', updated)
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Prozess-Schritte (mindestens 2) *
-          </label>
-          <p className="text-sm text-gray-600">
-            Definiere die einzelnen Schritte deines Prozesses. Jeder Schritt kann
-            mehrere Substeps haben.
-          </p>
+      {/* Risks & Controls */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Risiken & Kontrollen (mind. 1) *{' '}
+          {isRisksValid && <span className="text-green-600">✓</span>}
+        </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Welche Risiken können auftreten und wie werden sie kontrolliert/vermieden?
+        </p>
+
+        {/* Input for new risk control pair */}
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={newRisk}
+            onChange={(e) => setNewRisk(e.target.value)}
+            placeholder="z.B. Tippfehler"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
+          />
+          <input
+            type="text"
+            value={newControl}
+            onChange={(e) => setNewControl(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddRisk()}
+            placeholder="z.B. Spell-Check vor Publish"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
+          />
+          <button
+            type="button"
+            onClick={handleAddRisk}
+            className="px-4 py-2 bg-[#00A68B] text-white rounded-lg hover:bg-[#008B6F] font-medium"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
-        <button
-          onClick={addStep}
-          type="button"
-          className="flex items-center gap-1 px-3 py-1 bg-[#00A68B] text-white rounded-lg text-sm hover:bg-[#008B6F]"
-        >
-          <Plus size={16} /> Schritt hinzufügen
-        </button>
-      </div>
 
-      {stepsError && (
-        <p className="text-sm text-red-600">Du brauchst mindestens 2 Schritte</p>
-      )}
-
-      <div className="space-y-4">
-        {data.steps.map((step, stepIndex) => (
-          <div key={step.id} className="border border-gray-300 rounded-lg p-4 bg-white">
-            <div className="space-y-3">
-              {/* Main step fields */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Schritt {stepIndex + 1}: Titel *
-                </label>
-                <input
-                  type="text"
-                  value={step.title}
-                  onChange={(e) => updateStep(stepIndex, "title", e.target.value)}
-                  placeholder="z.B. Notion Sheet filtern nach 'ready for review'"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Beschreibung *
-                </label>
-                <textarea
-                  value={step.description}
-                  onChange={(e) => updateStep(stepIndex, "description", e.target.value)}
-                  placeholder="Was wird in diesem Schritt gemacht?"
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
-                />
-              </div>
-
-              {/* Substeps */}
-              {step.substeps && step.substeps.length > 0 && (
-                <div className="ml-4 p-3 bg-gray-50 rounded-lg space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Substeps:
-                  </label>
-                  {step.substeps.map((substep, substepIndex) => (
-                    <div key={`${step.id}-${substepIndex}`} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={substep.title}
-                        onChange={(e) =>
-                          updateSubstep(stepIndex, substepIndex, "title", e.target.value)
-                        }
-                        placeholder={`Substep ${substepIndex + 1}...`}
-                        className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
-                      />
-                      <button
-                        onClick={() => removeSubstep(stepIndex, substepIndex)}
-                        type="button"
-                        className="px-2 py-1 text-red-600 hover:bg-red-50 rounded"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addSubstep(stepIndex)}
-                    type="button"
-                    className="text-sm text-[#00A68B] hover:underline flex items-center gap-1"
-                  >
-                    <Plus size={14} /> Substep hinzufügen
-                  </button>
+        {/* List of risk control pairs */}
+        {(data.risksAndControls || []).length > 0 ? (
+          <div className="space-y-2">
+            {data.risksAndControls.map((item, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200"
+              >
+                <div className="text-sm">
+                  <span className="font-semibold text-red-700">Risiko:</span>{' '}
+                  <span className="text-gray-800">{item.risk}</span>
+                  <br />
+                  <span className="font-semibold text-emerald-700">Kontrolle:</span>{' '}
+                  <span className="text-gray-800">{item.control}</span>
                 </div>
-              )}
-
-              {/* Action buttons */}
-              <div className="flex justify-between pt-2 border-t border-gray-200">
-                {!step.substeps || step.substeps.length === 0 ? (
-                  <button
-                    onClick={() => addSubstep(stepIndex)}
-                    type="button"
-                    className="text-sm text-[#00A68B] hover:underline flex items-center gap-1"
-                  >
-                    <Plus size={14} /> Substeps hinzufügen
-                  </button>
-                ) : (
-                  <div />
-                )}
-                {data.steps.length > 2 && (
-                  <button
-                    onClick={() => removeStep(stepIndex)}
-                    type="button"
-                    className="text-sm text-red-600 hover:underline flex items-center gap-1"
-                  >
-                    <X size={14} /> Schritt löschen
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRisk(index)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
+        ) : (
+          !isRisksValid && !validation.valid && (
+            <p className="text-sm text-red-600 mt-2">⚠️ Mindestens ein Risiko-Kontroll-Paar erforderlich</p>
+          )
+        )}
       </div>
 
+      {/* Outputs */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Ergebnisse / Outputs (mind. 1) *{' '}
+          {isOutputsValid && <span className="text-green-600">✓</span>}
+        </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Was sind die Ergebnisse/Outputs dieses Prozesses? z.B. "Veröffentlichter Blogpost", "Performance Report"
+        </p>
+
+        {/* Input for new output */}
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={newOutput}
+            onChange={(e) => setNewOutput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddOutput()}
+            placeholder="z.B. Veröffentlichter Blogpost"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
+          />
+          <button
+            type="button"
+            onClick={handleAddOutput}
+            className="px-4 py-2 bg-[#00A68B] text-white rounded-lg hover:bg-[#008B6F] font-medium"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* List of outputs */}
+        {(data.outputs || []).length > 0 ? (
+          <div className="space-y-2">
+            {data.outputs.map((output, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200"
+              >
+                <span className="text-gray-800">{output}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveOutput(index)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          !isOutputsValid && !validation.valid && (
+            <p className="text-sm text-red-600 mt-2">⚠️ Mindestens ein Output erforderlich</p>
+          )
+        )}
+      </div>
+
+      {/* Records */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Aufzeichnungen / Record-Typen (mind. 1) *{' '}
+          {isRecordsValid && <span className="text-green-600">✓</span>}
+        </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Welche Aufzeichnungen/Daten müssen dokumentiert oder archiviert werden?
+          z.B. "Google Analytics tracking", "Editorial Calendar"
+        </p>
+
+        {/* Input for new record */}
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={newRecord}
+            onChange={(e) => setNewRecord(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddRecord()}
+            placeholder="z.B. Google Analytics tracking"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
+          />
+          <button
+            type="button"
+            onClick={handleAddRecord}
+            className="px-4 py-2 bg-[#00A68B] text-white rounded-lg hover:bg-[#008B6F] font-medium"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* List of records */}
+        {(data.records || []).length > 0 ? (
+          <div className="space-y-2">
+            {data.records.map((record, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200"
+              >
+                <span className="text-gray-800">{record}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRecord(index)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          !isRecordsValid && !validation.valid && (
+            <p className="text-sm text-red-600 mt-2">⚠️ Mindestens ein Record-Typ erforderlich</p>
+          )
+        )}
+      </div>
+
+      {/* Hint */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
-          <strong>💡 Tipp:</strong> Substeps sind optional und helfen, komplexe Schritte zu
-          strukturieren. Beispiel: "Notion-Sheet öffnen", "Filter setzen", "Übersicht anzeigen"
+          <strong>💡 Tipp:</strong> Step 4 dokumentiert die Qualitätssicherung (Risiken), die
+          erwarteten Ergebnisse (Outputs), und die Nachweise (Records). Dies ist wichtig für
+          Compliance und Monitoring.
         </p>
       </div>
     </div>
-  );
+  )
 }
