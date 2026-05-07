@@ -18,6 +18,7 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
   const recognitionRef = useRef<any>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const transcriptRef = useRef<string>('')
+  const isListeningRef = useRef<boolean>(false)
   const maxRecordingDuration = 120
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
     recognition.maxAlternatives = 1
 
     recognition.onstart = () => {
+      isListeningRef.current = true
       setIsListening(true)
       setError(null)
       setRecordingTime(0)
@@ -90,12 +92,17 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
       }
 
       setError(errorMessage)
+      isListeningRef.current = false
       setIsListening(false)
     }
 
     recognition.onend = () => {
-      setIsListening(false)
-      if (timerRef.current) clearInterval(timerRef.current)
+      if (isListeningRef.current) {
+        try {
+          recognition.start()
+        } catch (e) {
+        }
+      }
     }
 
     return () => {
@@ -126,6 +133,7 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
   }
 
   const stopRecording = () => {
+    isListeningRef.current = false
     if (recognitionRef.current) {
       recognitionRef.current.stop()
     }
