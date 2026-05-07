@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getServerSession } from "next-auth/next";
 import { CATEGORIES, CategoryId } from "@/types/process";
 import { getProcessesByCategory } from "@/data/processes";
 import ProcessCard from "@/components/ProcessCard";
@@ -14,6 +15,10 @@ export default async function CategoryPage({ params }: Props) {
   const { category } = await params;
   const cat = CATEGORIES.find((c) => c.id === category);
   if (!cat) notFound();
+
+  const session = await getServerSession();
+  const userEmail = session?.user?.email;
+  const adminEmail = process.env.ADMIN_EMAIL;
 
   const processes = getProcessesByCategory(category as CategoryId);
 
@@ -49,7 +54,7 @@ export default async function CategoryPage({ params }: Props) {
       </div>
 
       {/* Client-side filtering */}
-      <CategoryPageClient processes={processes} category={cat} />
+      <CategoryPageClient processes={processes} category={cat} userEmail={userEmail} adminEmail={adminEmail} />
     </div>
   );
 }

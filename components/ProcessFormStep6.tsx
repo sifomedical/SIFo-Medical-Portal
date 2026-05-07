@@ -7,12 +7,14 @@ interface ProcessFormStep6Props {
   data: Partial<Process>
   isSubmitting?: boolean
   onSubmit: () => void
+  mode?: 'create' | 'edit'
 }
 
 export default function ProcessFormStep6({
   data,
   isSubmitting = false,
   onSubmit,
+  mode = 'create',
 }: ProcessFormStep6Props) {
   // Validation check
   const isValid = {
@@ -114,7 +116,9 @@ export default function ProcessFormStep6({
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {isSubmitting ? '🕐 Wird eingereicht...' : '✓ Prozess einreichen'}
+          {isSubmitting
+            ? mode === 'edit' ? '🕐 Wird gespeichert...' : '🕐 Wird eingereicht...'
+            : mode === 'edit' ? '💾 Änderungen speichern' : '✓ Prozess einreichen'}
         </button>
       </div>
 

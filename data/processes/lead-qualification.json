@@ -1,0 +1,84 @@
+{
+  "id": "8bcdb303-c3b0-4bf6-82c2-0628066d2462",
+  "slug": "lead-qualification",
+  "title": "Lead Qualification",
+  "subtitle": "Qualifizierung von Webinar-Leads nach dem BANT-Modell.",
+  "description": "In diesem Prozess werden Leads aus einem Webinar systematisch angereichert und anschließend in ODO abgelegt. Danach erfolgt eine individuelle Durchqualifizierung, um festzustellen, ob die Leads gemäß dem BANT-Modell zu unserem Unternehmen passen.",
+  "purpose": "Der Prozess existiert, um die Qualität der generierten Leads zu erhöhen und sicherzustellen, dass nur vielversprechende Kontakte weiterverfolgt werden.",
+  "scope": "Dieser Prozess ist relevant für das Vertriebsteam, wenn Webinar-Teilnehmer als Leads identifiziert werden.",
+  "category": "sales",
+  "responsibilities": [
+    "Marketing-Team: Anreicherung der Leads",
+    "Vertriebsteam: Durchqualifizierung der Leads",
+    "Sales-Manager: Überwachung des Prozesses"
+  ],
+  "definitions": {
+    "ODO": "Ein CRM-System zur Verwaltung von Leads und Kunden.",
+    "BANT": "Ein Modell zur Bewertung von Leads basierend auf Budget, Authority, Need und Timeline."
+  },
+  "inputs": [
+    "Liste der Webinar-Teilnehmer",
+    "Zugang zu ODO"
+  ],
+  "steps": [
+    {
+      "id": "step1",
+      "title": "Lead Anreicherung",
+      "description": "Die Webinar-Leads werden mit zusätzlichen Informationen angereichert, um eine bessere Qualifizierung zu ermöglichen."
+    },
+    {
+      "id": "step2",
+      "title": "Lead Ablage in ODO",
+      "description": "Die angereicherten Leads werden in das ODO-System eingegeben."
+    },
+    {
+      "id": "step3",
+      "title": "Durchqualifizierung",
+      "description": "Jeder Lead wird einzeln angerufen und auf Basis des BANT-Modells überprüft."
+    }
+  ],
+  "risksAndControls": [
+    {
+      "risk": "Unzureichende Lead-Informationen.",
+      "control": "Sicherstellen, dass alle notwendigen Daten vor der Anreicherung vorhanden sind."
+    },
+    {
+      "risk": "Falsche Qualifizierung der Leads.",
+      "control": "Regelmäßige Schulungen für das Vertriebsteam zur Anwendung des BANT-Modells."
+    }
+  ],
+  "outputs": [
+    "Qualifizierte Leads für den Vertrieb"
+  ],
+  "records": [
+    "Protokolle der Anrufe",
+    "Qualifizierungsberichte"
+  ],
+  "tools": [
+    {
+      "url": "https://odo.example.com",
+      "icon": "odo-icon.png",
+      "name": "ODO"
+    }
+  ],
+  "goals": [
+    "Erhöhung der Conversion Rate",
+    "Effiziente Nutzung der Vertriebsressourcen"
+  ],
+  "tags": [
+    "Lead Management",
+    "Vertrieb",
+    "Webinar"
+  ],
+  "owner": "SIFo Medical",
+  "frequency": "bei jedem Webinar",
+  "processVideoUrl": null,
+  "mermaidDiagram": "graph TD\n A[Start] --> B[Lead Anreicherung]\n B --> C[Lead Ablage in ODO]\n C --> D[Durchqualifizierung]\n D --> E[Ende]",
+  "status": "active",
+  "createdBy": "sifo.medical@gmail.com",
+  "createdAt": "2026-05-07T16:36:25.836+00:00",
+  "approvedBy": null,
+  "approvedAt": null,
+  "editedAt": "2026-05-07T16:36:25.836+00:00",
+  "lastUpdated": "2026-05-07T16:52:23.248Z"
+}

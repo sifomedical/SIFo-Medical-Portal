@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getServerSession } from "next-auth/next";
 import { CATEGORIES, CategoryId } from "@/types/process";
 import { getProcessBySlug, getAllSlugs } from "@/data/processes";
 import StepAccordion from "@/components/StepAccordion";
 import MermaidDiagram from "@/components/MermaidDiagram";
 import ProcessExporter from "@/components/ProcessExporter";
+import ProcessDetailActions from "@/components/ProcessDetailActions";
 import AttachmentSection from "@/components/AttachmentSection";
-import { ArrowLeft, Clock, User, Tag, ExternalLink, Target } from "lucide-react";
+import { ArrowLeft, Clock, User, Tag, ExternalLink, Target, Pencil } from "lucide-react";
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -16,6 +18,12 @@ export default async function ProcessDetailPage({ params }: Props) {
   const { category, slug } = await params;
   const proc = getProcessBySlug(category as CategoryId, slug);
   if (!proc) notFound();
+
+  const session = await getServerSession();
+  const userEmail = session?.user?.email;
+  const isAdmin = userEmail === process.env.ADMIN_EMAIL;
+  const isCreator = userEmail === proc.owner;
+  const canDelete = isAdmin || isCreator;
 
   const cat = CATEGORIES.find((c) => c.id === category);
 
@@ -59,6 +67,15 @@ export default async function ProcessDetailPage({ params }: Props) {
           {/* Actions */}
           <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-3">
             <ProcessExporter process={proc} />
+            {isAdmin && (
+              <Link
+                href={`/${category}/${slug}/edit`}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1B3A6B] hover:bg-[#0C2340] text-white rounded-lg font-medium transition-colors text-sm"
+              >
+                <Pencil className="w-4 h-4" />
+                Bearbeiten
+              </Link>
+            )}
             {proc.processVideoUrl && (
               <a
                 href={proc.processVideoUrl}
@@ -69,6 +86,9 @@ export default async function ProcessDetailPage({ params }: Props) {
                 <span>🎬</span>
                 Video-Anleitung
               </a>
+            )}
+            {canDelete && (
+              <ProcessDetailActions slug={proc.slug} title={proc.title} isArchived={proc.status === 'archived'} category={category as CategoryId} />
             )}
           </div>
 

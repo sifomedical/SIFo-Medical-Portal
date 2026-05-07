@@ -15,11 +15,15 @@ interface CategoryPageClientProps {
     borderColor: string
     bgColor: string
   }
+  userEmail?: string | null
+  adminEmail?: string | null
 }
 
 export default function CategoryPageClient({
   processes,
   category,
+  userEmail,
+  adminEmail,
 }: CategoryPageClientProps) {
   const [filters, setFilters] = useState<FilterState>({
     tags: [],
@@ -89,7 +93,7 @@ export default function CategoryPageClient({
       {filteredProcesses.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredProcesses.map((process) => (
-            <ProcessCard key={process.id} process={process} />
+            <ProcessCard key={process.id} process={process} userEmail={userEmail} adminEmail={adminEmail} />
           ))}
         </div>
       ) : (

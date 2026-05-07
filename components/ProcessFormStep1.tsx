@@ -7,7 +7,6 @@ const CATEGORIES = ['marketing', 'sales', 'operations', 'hr', 'quality', 'financ
 interface Step1Data {
   title: string
   subtitle: string
-  category: string
   description: string
   purpose: string
   scope: string
@@ -34,7 +33,6 @@ export default function ProcessFormStep1({
   const validation = onValidate()
   const isTitleValid = Boolean(data.title?.trim())
   const isSubtitleValid = Boolean(data.subtitle?.trim())
-  const isCategoryValid = Boolean(data.category)
   const isDescriptionValid = Boolean(data.description?.trim())
   const isPurposeValid = Boolean(data.purpose?.trim())
   const isScopeValid = Boolean(data.scope?.trim())
@@ -76,30 +74,6 @@ export default function ProcessFormStep1({
         />
         {!isSubtitleValid && !validation.valid && (
           <p className="text-sm text-red-600 mt-1">⚠️ Der Untertitel ist erforderlich</p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Kategorie * {isCategoryValid && <span className="text-green-600">✓</span>}
-        </label>
-        <select
-          name="category"
-          value={data.category || ''}
-          onChange={handleChange}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent ${
-            !isCategoryValid && !validation.valid ? 'border-red-400 bg-red-50' : 'border-gray-300'
-          }`}
-        >
-          <option value="">-- Bitte wählen --</option>
-          {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </option>
-          ))}
-        </select>
-        {!isCategoryValid && !validation.valid && (
-          <p className="text-sm text-red-600 mt-1">⚠️ Die Kategorie ist erforderlich</p>
         )}
       </div>
 

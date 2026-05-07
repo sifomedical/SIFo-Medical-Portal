@@ -36,16 +36,40 @@ export default function AdminPage() {
 
   async function approveUser(email: string) {
     try {
+      console.log("🔄 APPROVING USER:", email);
+
       const response = await fetch("/api/admin/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+
+      const text = await response.text();
+      console.log("📡 APPROVE RAW RESPONSE:", {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        text: text.substring(0, 200),
+      });
+
       if (response.ok) {
+        try {
+          const data = JSON.parse(text);
+          console.log("✅ USER APPROVED:", data);
+        } catch (e) {
+          console.log("✅ USER APPROVED (no JSON)");
+        }
         fetchUsers();
+      } else {
+        try {
+          const error = JSON.parse(text);
+          console.error("❌ APPROVE FAILED:", error);
+        } catch (e) {
+          console.error("❌ APPROVE FAILED - NOT JSON:", text);
+        }
       }
     } catch (error) {
-      console.error("Failed to approve user:", error);
+      console.error("❌ FETCH ERROR:", error);
     }
   }
 
@@ -88,6 +112,26 @@ export default function AdminPage() {
           </Link>
         </div>
       </nav>
+
+      {/* Admin Tabs */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex gap-6">
+            <a
+              href="/admin"
+              className="px-4 py-4 text-sm font-medium text-[#0C2340] border-b-2 border-[#0C2340]"
+            >
+              👥 Benutzer-Genehmigung
+            </a>
+            <a
+              href="/admin/processes"
+              className="px-4 py-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-[#0C2340] hover:border-[#0C2340]"
+            >
+              📋 Prozess-Genehmigung
+            </a>
+          </div>
+        </div>
+      </div>
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">

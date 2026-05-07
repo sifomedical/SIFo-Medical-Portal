@@ -38,9 +38,10 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = buildGenerationPrompt(category as CategoryId, userInput, clarifyingAnswers)
 
-    const message = await openai.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
       max_tokens: 4096,
+      temperature: 0.7,
       messages: [
         {
           role: 'user',
@@ -49,8 +50,7 @@ export async function POST(request: NextRequest) {
       ],
     })
 
-    const responseText =
-      message.content[0].type === 'text' ? message.content[0].text : ''
+    const responseText = response.choices[0]?.message?.content || ''
 
     if (!responseText) {
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(result)
-  } catch (error) {
+  } catch (error: any) {
     console.error('AI Generation Error:', error)
 
     if (error instanceof OpenAI.APIError) {

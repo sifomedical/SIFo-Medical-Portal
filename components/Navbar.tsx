@@ -5,11 +5,21 @@ import { usePathname } from "next/navigation";
 import { LogOut, ChevronRight, Home, Settings } from "lucide-react";
 import Image from "next/image";
 import { CATEGORIES } from "@/types/process";
+import NavbarSearch from "./NavbarSearch";
 
 export default function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
-  const isAdmin = (session as any)?.isAdmin;
+  const adminEmail = "sifo.medical@gmail.com"; // Match server-side check
+  const isAdmin = session?.user?.email === adminEmail;
+
+  console.log("📱 NAVBAR DEBUG:", {
+    email: session?.user?.email,
+    isAdmin,
+    adminEmail,
+    sessionIsAdmin: (session as any)?.isAdmin,
+    status,
+  });
 
   // Breadcrumb aus Pfad ableiten
   const segments = pathname.split("/").filter(Boolean);
@@ -73,6 +83,7 @@ export default function Navbar() {
           {/* User, Admin & Logout */}
           {session?.user && (
             <div className="flex items-center gap-3">
+              <NavbarSearch />
               {session.user.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

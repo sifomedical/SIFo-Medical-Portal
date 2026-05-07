@@ -26,6 +26,8 @@ interface ProcessFormWrapperProps {
   onSuccess?: (processId: string) => void
   showBackButton?: boolean
   onBack?: () => void
+  mode?: 'create' | 'edit'
+  processSlug?: string
 }
 
 export default function ProcessFormWrapper({
@@ -33,6 +35,8 @@ export default function ProcessFormWrapper({
   onSuccess,
   showBackButton = false,
   onBack,
+  mode = 'create',
+  processSlug,
 }: ProcessFormWrapperProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
@@ -170,7 +174,12 @@ export default function ProcessFormWrapper({
   }
 
   const handleStepClick = (step: number) => {
-    // Only allow clicking on already visited steps or next step if current is valid
+    // In edit mode, allow jumping to any step freely
+    if (mode === 'edit') {
+      setCurrentStep(step)
+      setError(null)
+      return
+    }
     if (step < currentStep || (step === currentStep + 1 && canProceed())) {
       setCurrentStep(step)
       setError(null)
@@ -188,35 +197,53 @@ export default function ProcessFormWrapper({
     setError(null)
 
     try {
-      // Create draft process
-      const response = await fetch('/api/processes/draft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          status: 'draft',
-        }),
-      })
+      if (mode === 'edit' && processSlug) {
+        // Update existing process directly as active
+        const response = await fetch('/api/processes/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...formData, slug: processSlug }),
+        })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create process')
-      }
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Fehler beim Speichern')
+        }
 
-      const { id, slug } = await response.json()
+        const { slug, category } = await response.json()
 
-      // Send notification to admins
-      const processUrl = `/marketing/${slug}`
-      await sendNotification('draft_created', {
-        to: 'admin@sifo-medical.com',
-        processTitle: formData.title || 'Neuer Prozess',
-        processUrl,
-      })
-
-      if (onSuccess) {
-        onSuccess(id)
+        if (onSuccess) {
+          onSuccess(slug)
+        } else {
+          router.push(`/${category}/${slug}`)
+        }
       } else {
-        router.push(`/admin/processes/${id}`)
+        // Create new draft process
+        const response = await fetch('/api/processes/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...formData, status: 'draft' }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to create process')
+        }
+
+        const { id, slug } = await response.json()
+
+        const processUrl = `/marketing/${slug}`
+        await sendNotification('draft_created', {
+          to: 'admin@sifo-medical.com',
+          processTitle: formData.title || 'Neuer Prozess',
+          processUrl,
+        })
+
+        if (onSuccess) {
+          onSuccess(id)
+        } else {
+          router.push(`/admin/processes/${id}`)
+        }
       }
     } catch (err) {
       setError(
@@ -281,6 +308,7 @@ export default function ProcessFormWrapper({
             data={formData}
             isSubmitting={isSubmitting}
             onSubmit={handleSubmit}
+            mode={mode}
           />
         )}
       </div>

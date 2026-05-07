@@ -22,6 +22,15 @@ export function getProcessBySlug(
   slug: string
 ): Process | undefined {
   return ALL_PROCESSES.find(
+    (p) => p.category === category && p.slug === slug && p.status === "active"
+  );
+}
+
+export function getProcessBySlugAdmin(
+  category: CategoryId,
+  slug: string
+): Process | undefined {
+  return ALL_PROCESSES.find(
     (p) => p.category === category && p.slug === slug
   );
 }

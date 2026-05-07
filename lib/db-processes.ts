@@ -2,77 +2,144 @@ import { kv } from "@vercel/kv";
 import { Process, DraftProcess } from "@/types/process";
 import * as fs from "fs";
 import * as path from "path";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 /**
- * Saves a draft process to Vercel KV
- * Stores both the process and adds the slug to the drafts set
+ * Saves a draft process to Vercel KV (deprecated - now using Supabase)
  */
 export async function saveDraftProcess(
   process: Process,
   createdBy: string
 ): Promise<void> {
-  const now = new Date().toISOString();
-
-  const draftProcess: DraftProcess = {
-    ...process,
-    createdBy,
-    createdAt: now,
-    approvedBy: undefined,
-    approvedAt: undefined,
-    editedAt: now,
-  };
-
-  // Store the draft process
-  const key = `process:draft:${process.slug}`;
-  await kv.set(key, JSON.stringify(draftProcess));
-
-  // Add slug to the drafts set
-  await kv.sadd("processes:drafts", process.slug);
-
-  console.log(`✅ Draft process saved: ${process.slug}`);
+  // Note: This is deprecated. Drafts are now saved via /api/processes/draft/route.ts to Supabase
+  console.log(`ℹ️ saveDraftProcess is deprecated. Use /api/processes/draft endpoint instead.`);
 }
 
 /**
- * Get a single draft process by slug
+ * Get a single draft or archived process by slug from Supabase
  */
 export async function getDraftProcess(
   slug: string
 ): Promise<DraftProcess | null> {
-  const key = `process:draft:${slug}`;
-  const data = await kv.get(key);
+  try {
+    const { data, error } = await supabase
+      .from('processes')
+      .select('*')
+      .eq('slug', slug)
+      .in('status', ['draft', 'archived'])
+      .single();
 
-  if (!data) return null;
+    if (error || !data) {
+      console.warn(`⚠️ Draft process not found: ${slug}`);
+      return null;
+    }
 
-  // Handle both string and object responses from KV
-  if (typeof data === 'string') {
-    return JSON.parse(data) as DraftProcess;
+    // Map Supabase row to DraftProcess type
+    const draftProcess: DraftProcess = {
+      id: data.id,
+      slug: data.slug,
+      title: data.title,
+      subtitle: data.subtitle,
+      description: data.description,
+      purpose: data.purpose,
+      scope: data.scope,
+      category: data.category,
+      responsibilities: data.responsibilities || [],
+      definitions: data.definitions || {},
+      inputs: data.inputs || [],
+      steps: data.steps || [],
+      risksAndControls: data.risks_and_controls || [],
+      outputs: data.outputs || [],
+      records: data.records || [],
+      tools: data.tools || [],
+      goals: data.goals || [],
+      tags: data.tags || [],
+      owner: data.owner,
+      frequency: data.frequency,
+      processVideoUrl: data.process_video_url,
+      mermaidDiagram: data.mermaid_diagram || '',
+      status: data.status,
+      createdBy: data.created_by,
+      createdAt: data.created_at,
+      approvedBy: data.approved_by,
+      approvedAt: data.approved_at,
+      editedAt: data.updated_at,
+      lastUpdated: data.updated_at || data.created_at,
+    };
+
+    return draftProcess;
+  } catch (error) {
+    console.error(`❌ Error fetching draft process ${slug}:`, error);
+    return null;
   }
-
-  return data as DraftProcess;
 }
 
 /**
- * Get all draft processes (admin only)
+ * Get all draft and archived processes (admin only) from Supabase
  */
 export async function getAllDraftProcesses(): Promise<DraftProcess[]> {
-  const drafts = await kv.smembers("processes:drafts");
+  try {
+    // Fetch both draft and archived processes
+    const { data, error } = await supabase
+      .from('processes')
+      .select('*')
+      .in('status', ['draft', 'archived'])
+      .order('created_at', { ascending: false });
 
-  if (!drafts || drafts.length === 0) return [];
-
-  const processes: DraftProcess[] = [];
-
-  for (const slug of drafts) {
-    const process = await getDraftProcess(slug as string);
-    if (process) {
-      processes.push(process);
+    if (error) {
+      console.error('❌ Error fetching draft/archived processes from Supabase:', error);
+      return [];
     }
-  }
 
-  // Sort by creation date (newest first)
-  return processes.sort(
-    (a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+    if (!data || data.length === 0) {
+      console.log('ℹ️ No draft or archived processes found');
+      return [];
+    }
+
+    // Map Supabase rows to DraftProcess type
+    const processes: DraftProcess[] = data.map((row: any) => ({
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      subtitle: row.subtitle,
+      description: row.description,
+      purpose: row.purpose,
+      scope: row.scope,
+      category: row.category,
+      responsibilities: row.responsibilities || [],
+      definitions: row.definitions || {},
+      inputs: row.inputs || [],
+      steps: row.steps || [],
+      risksAndControls: row.risks_and_controls || [],
+      outputs: row.outputs || [],
+      records: row.records || [],
+      tools: row.tools || [],
+      goals: row.goals || [],
+      tags: row.tags || [],
+      owner: row.owner,
+      frequency: row.frequency,
+      processVideoUrl: row.process_video_url,
+      mermaidDiagram: row.mermaid_diagram || '',
+      status: row.status,
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+      approvedBy: row.approved_by,
+      approvedAt: row.approved_at,
+      editedAt: row.updated_at,
+      lastUpdated: row.updated_at || row.created_at,
+    }));
+
+    console.log(`✅ Found ${processes.length} draft processes in Supabase`);
+    return processes;
+  } catch (error) {
+    console.error('❌ Exception fetching draft processes:', error);
+    return [];
+  }
 }
 
 /**
@@ -123,36 +190,53 @@ export async function approveDraftProcess(
   const draftProcess = await getDraftProcess(slug);
   if (!draftProcess) return null;
 
+  const now = new Date().toISOString();
   const approvedProcess: Process = {
     ...draftProcess,
     status: "active",
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: now,
   };
 
-  // Store as active process in KV
-  const activeKey = `process:active:${slug}`;
-  await kv.set(activeKey, JSON.stringify(approvedProcess));
+  try {
+    console.log(`🔄 Attempting to update Supabase for slug: ${slug}`);
+    console.log(`   Supabase URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ set' : '❌ not set'}`);
+    console.log(`   Service Role Key: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ set' : '❌ not set'}`);
 
-  // Write to /data/processes/{slug}.json
+    // Update in Supabase - mark as active
+    const { data, error: updateError } = await supabase
+      .from('processes')
+      .update({
+        status: 'active',
+        approved_by: approvedBy,
+        approved_at: now,
+        updated_at: now,
+      })
+      .eq('slug', slug)
+      .select();
+
+    console.log(`📊 Supabase update response:`, { data, error: updateError });
+
+    if (updateError) {
+      console.error('❌ Error updating process in Supabase:', updateError);
+    } else {
+      console.log(`✅ Process marked as active in Supabase: ${slug}`);
+    }
+  } catch (error) {
+    console.error('❌ Exception updating Supabase:', error);
+  }
+
+  // Write to /data/processes/{slug}.json (for local development)
   try {
     const dataDir = path.join(process.cwd(), "data", "processes");
-
-    // Ensure directory exists
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
-
     const filePath = path.join(dataDir, `${slug}.json`);
     fs.writeFileSync(filePath, JSON.stringify(approvedProcess, null, 2));
     console.log(`📝 Process written to file: ${filePath}`);
   } catch (error) {
     console.error(`⚠️ Could not write to file (might be on Vercel):`, error);
-    // This is expected on Vercel - we still have it in KV
   }
-
-  // Remove from drafts
-  await kv.del(`process:draft:${slug}`);
-  await kv.srem("processes:drafts", slug);
 
   console.log(`✅ Draft process approved: ${slug} (by ${approvedBy})`);
   return approvedProcess as DraftProcess;

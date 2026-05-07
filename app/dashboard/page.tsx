@@ -9,6 +9,8 @@ import Link from "next/link";
 export default async function DashboardPage() {
   const session = await getServerSession();
   const firstName = session?.user?.name?.split(" ")[0] || "Team";
+  const userEmail = session?.user?.email;
+  const adminEmail = process.env.ADMIN_EMAIL;
 
   const totalProcesses = ALL_PROCESSES.filter((p) => p.status === "active").length;
   const recentProcesses = [...ALL_PROCESSES]
@@ -113,7 +115,7 @@ export default async function DashboardPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {recentProcesses.map((process) => (
-              <ProcessCard key={process.id} process={process} />
+              <ProcessCard key={process.id} process={process} userEmail={userEmail} adminEmail={adminEmail} />
             ))}
           </div>
         </section>

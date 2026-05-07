@@ -1,13 +1,52 @@
+'use client'
+
 import Link from "next/link";
-import { ArrowRight, Clock, User, Wrench } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Clock, User, Wrench, Trash2 } from "lucide-react";
 import { Process, CATEGORIES } from "@/types/process";
+import { useState } from "react";
 
 interface Props {
   process: Process;
+  userEmail?: string | null;
+  adminEmail?: string | null;
 }
 
-export default function ProcessCard({ process }: Props) {
+export default function ProcessCard({ process, userEmail, adminEmail }: Props) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
   const category = CATEGORIES.find((c) => c.id === process.category);
+
+  const isAdmin = userEmail === adminEmail;
+  const isCreator = userEmail === process.owner;
+  const canDelete = isAdmin || isCreator;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm(`Prozess "${process.title}" archivieren?`)) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch('/api/processes/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: process.slug, action: 'archive' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to archive');
+      }
+
+      alert('✅ Prozess archiviert');
+      router.refresh();
+    } catch (error) {
+      alert('❌ ' + (error instanceof Error ? error.message : 'Error'));
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Link
@@ -86,9 +125,21 @@ export default function ProcessCard({ process }: Props) {
           <span className="text-xs text-[#CDD3D8]">
             Aktualisiert: {new Date(process.lastUpdated).toLocaleDateString("de-AT")}
           </span>
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#00A68B] opacity-0 group-hover:opacity-100 transition-opacity">
-            Öffnen <ArrowRight className="w-3.5 h-3.5" />
-          </span>
+          <div className="flex items-center gap-2">
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                title="Prozess archivieren"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+            <span className="flex items-center gap-1 text-xs font-semibold text-[#00A68B] opacity-0 group-hover:opacity-100 transition-opacity">
+              Öffnen <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </div>
         </div>
       </div>
     </Link>

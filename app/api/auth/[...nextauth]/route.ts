@@ -63,18 +63,70 @@ const handler = NextAuth({
     error: "/login",
   },
   callbacks: {
+    async jwt({ token, user, account }) {
+      // Always update user status from database (on every token refresh)
+      if (token.email || user?.email) {
+        const email = token.email || user?.email;
+        const isAdmin = email === ADMIN_EMAIL;
+        const dbUser = await getUserByEmail(email as string);
+
+        console.log("🔑 JWT CALLBACK - REFRESH:", {
+          email,
+          isAdmin,
+          dbUserFound: !!dbUser,
+          dbUserStatus: dbUser?.status,
+        });
+
+        token.email = email;
+        token.isAdmin = isAdmin;
+        token.approvalStatus = isAdmin ? "approved" : (dbUser?.status || "pending");
+
+        console.log("🔑 JWT TOKEN UPDATED:", {
+          email: token.email,
+          isAdmin: token.isAdmin,
+          approvalStatus: token.approvalStatus,
+        });
+      }
+
+      return token;
+    },
+
     async signIn({ user }) {
       if (!user.email) return false;
       if (!isEmailAllowed(user.email)) return false;
 
+      console.log("🔐 SIGNIN CALLBACK:", {
+        email: user.email,
+        name: user.name,
+        adminEmail: ADMIN_EMAIL,
+        isAdmin: user.email === ADMIN_EMAIL,
+      });
+
       // Create or update user in database
       let dbUser = await getUserByEmail(user.email);
+
+      console.log("🔍 USER LOOKUP:", {
+        email: user.email,
+        userFound: !!dbUser,
+        userStatus: dbUser?.status,
+      });
+
       if (!dbUser) {
+        console.log("👤 CREATING NEW USER:", {
+          email: user.email,
+          name: user.name,
+        });
+
         dbUser = await createUser({
-          id: `user_${Date.now()}`,
           email: user.email,
           name: user.name || undefined,
           status: "pending",
+        });
+
+        console.log("✅ USER CREATED:", {
+          email: dbUser?.email,
+          status: dbUser?.status,
+          id: dbUser?.id,
         });
       }
 
@@ -82,26 +134,24 @@ const handler = NextAuth({
     },
 
     async session({ session, token }) {
-      if (session.user?.email) {
-        const isAdmin = session.user.email === ADMIN_EMAIL;
-        (session as any).isAdmin = isAdmin;
+      console.log("📊 SESSION CALLBACK - TOKEN DATA:", {
+        tokenEmail: token.email,
+        tokenIsAdmin: token.isAdmin,
+        tokenApprovalStatus: token.approvalStatus,
+      });
 
-        // Get user from database to get approval status
-        const dbUser = await getUserByEmail(session.user.email);
-        
-        if (dbUser) {
-          // User exists in DB - use their status
-          (session as any).approvalStatus = dbUser.status;
-        } else {
-          // User doesn't exist yet - should not happen, but default to pending
-          (session as any).approvalStatus = "pending";
-        }
-
-        // Admin is always approved, even if not in DB yet
-        if (isAdmin) {
-          (session as any).approvalStatus = "approved";
-        }
+      // Get isAdmin and approvalStatus from JWT token
+      if (token.email) {
+        (session as any).isAdmin = token.isAdmin || false;
+        (session as any).approvalStatus = token.approvalStatus || "pending";
       }
+
+      console.log("📊 SESSION CALLBACK RESULT:", {
+        email: session.user?.email,
+        isAdmin: (session as any).isAdmin,
+        approvalStatus: (session as any).approvalStatus,
+      });
+
       return session;
     },
   },

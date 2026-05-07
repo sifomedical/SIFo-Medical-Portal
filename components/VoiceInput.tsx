@@ -22,7 +22,7 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
   const maxRecordingDuration = 120
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     const hasMediaRecorder = typeof MediaRecorder !== 'undefined'
 
     if (!SpeechRecognition || !hasMediaRecorder) {

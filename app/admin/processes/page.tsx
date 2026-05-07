@@ -5,11 +5,15 @@ import { DraftProcess } from "@/types/process";
 import { CATEGORIES } from "@/types/process";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
+type Tab = 'pending' | 'archived'
+
 export default function AdminProcessesPage() {
   const [drafts, setDrafts] = useState<DraftProcess[]>([]);
+  const [archived, setArchived] = useState<DraftProcess[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('pending');
 
   useEffect(() => {
     fetchDrafts();
@@ -29,7 +33,13 @@ export default function AdminProcessesPage() {
 
       const data = await response.json();
       console.log("✅ Drafts loaded:", data);
-      setDrafts(data.drafts || []);
+
+      // Separate drafts and archived processes
+      const pendingProcesses = (data.drafts || []).filter((p: DraftProcess) => p.status === 'draft');
+      const archivedProcesses = (data.drafts || []).filter((p: DraftProcess) => p.status === 'archived');
+
+      setDrafts(pendingProcesses);
+      setArchived(archivedProcesses);
       setError(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -51,10 +61,9 @@ export default function AdminProcessesPage() {
       if (!response.ok) throw new Error("Failed to approve");
       const data = await response.json();
 
-      // Show different messages based on whether deploy was triggered
-      const message = data.deployTriggered
-        ? "✅ Process approved!\n🚀 Automatic deployment started.\nProcess will be live in 30-60 seconds."
-        : "✅ Process approved!\n⚠️ No automatic deployment configured.\nYou'll need to manually deploy when ready.";
+      // Process is immediately available from Supabase - no deployment needed
+      const message = "✅ Process approved and live!\n🎉 Your process is now visible in the dashboard.\nNo deployment needed - it's available immediately.";
+
 
       alert(message);
       await fetchDrafts();
@@ -131,10 +140,38 @@ export default function AdminProcessesPage() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+        {/* Tabs */}
+        <div className="flex gap-4 border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+              activeTab === 'pending'
+                ? 'border-[#0C2340] text-[#0C2340]'
+                : 'border-transparent text-gray-600 hover:text-[#0C2340]'
+            }`}
+          >
+            📋 Pending ({drafts.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('archived')}
+            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+              activeTab === 'archived'
+                ? 'border-[#0C2340] text-[#0C2340]'
+                : 'border-transparent text-gray-600 hover:text-[#0C2340]'
+            }`}
+          >
+            🗂️ Archived ({archived.length})
+          </button>
+        </div>
+
         <div>
-          <h2 className="text-3xl font-bold text-[#0C2340]">Pending Processes</h2>
+          <h2 className="text-3xl font-bold text-[#0C2340]">
+            {activeTab === 'pending' ? 'Pending Processes' : 'Archived Processes'}
+          </h2>
           <p className="text-[#6A7A8B] mt-1">
-            Review and approve new processes created by team members
+            {activeTab === 'pending'
+              ? 'Review and approve new processes created by team members'
+              : 'Restore or permanently delete archived processes'}
           </p>
         </div>
 
@@ -144,13 +181,15 @@ export default function AdminProcessesPage() {
         </div>
       )}
 
-      {drafts.length === 0 ? (
+      {(activeTab === 'pending' ? drafts : archived).length === 0 ? (
         <div className="p-8 text-center bg-gray-50 rounded-lg border border-[#F5F6F7]">
-          <p className="text-[#9CA6B1]">No pending processes</p>
+          <p className="text-[#9CA6B1]">
+            {activeTab === 'pending' ? 'No pending processes' : 'No archived processes'}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {drafts.map((draft) => (
+          {(activeTab === 'pending' ? drafts : archived).map((draft) => (
             <div
               key={draft.slug}
               className="p-4 border border-[#F5F6F7] rounded-lg hover:shadow-md transition-shadow"
@@ -184,30 +223,66 @@ export default function AdminProcessesPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => handleApprove(draft.slug)}
-                    disabled={actionLoading !== null}
-                    className="flex items-center gap-1 px-3 py-2 bg-[#00A68B] text-white rounded-lg hover:bg-[#008B72] transition-colors disabled:opacity-50"
-                  >
-                    {actionLoading === draft.slug ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4" />
-                    )}
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleReject(draft.slug)}
-                    disabled={actionLoading !== null}
-                    className="flex items-center gap-1 px-3 py-2 bg-[#D81E5B] text-white rounded-lg hover:bg-[#B0183F] transition-colors disabled:opacity-50"
-                  >
-                    {actionLoading === draft.slug ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <XCircle className="w-4 h-4" />
-                    )}
-                    Reject
-                  </button>
+                  {activeTab === 'pending' ? (
+                    <>
+                      <button
+                        onClick={() => handleApprove(draft.slug)}
+                        disabled={actionLoading !== null}
+                        className="flex items-center gap-1 px-3 py-2 bg-[#00A68B] text-white rounded-lg hover:bg-[#008B72] transition-colors disabled:opacity-50"
+                      >
+                        {actionLoading === draft.slug ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-4 h-4" />
+                        )}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleReject(draft.slug)}
+                        disabled={actionLoading !== null}
+                        className="flex items-center gap-1 px-3 py-2 bg-[#D81E5B] text-white rounded-lg hover:bg-[#B0183F] transition-colors disabled:opacity-50"
+                      >
+                        {actionLoading === draft.slug ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <XCircle className="w-4 h-4" />
+                        )}
+                        Reject
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (confirm(`Restore "${draft.title}"?`)) {
+                          setActionLoading(draft.slug);
+                          fetch('/api/processes/delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ slug: draft.slug, action: 'restore' }),
+                          })
+                            .then(r => r.json())
+                            .then(() => {
+                              fetchDrafts();
+                              setActionLoading(null);
+                              alert('✅ Process restored');
+                            })
+                            .catch(e => {
+                              alert('❌ ' + (e instanceof Error ? e.message : 'Error'));
+                              setActionLoading(null);
+                            });
+                        }
+                      }}
+                      disabled={actionLoading !== null}
+                      className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    >
+                      {actionLoading === draft.slug ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <CheckCircle className="w-4 h-4" />
+                      )}
+                      Restore
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
