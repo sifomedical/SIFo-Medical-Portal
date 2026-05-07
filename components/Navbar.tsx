@@ -26,22 +26,22 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
-          <Link href="/" className="flex items-center gap-3 group hover:opacity-80 transition-opacity">
-            <div className="w-11 h-11 rounded-lg bg-[#0C2340] flex items-center justify-center p-2 border-2 border-[#00A68B] shadow-sm group-hover:shadow-md transition-shadow">
-              <Image
-                src="/signet-white.png"
-                alt="SIFo Medical"
-                width={32}
-                height={32}
-                className="w-full h-full"
-              />
+          <Link href="/" className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
+            <Image
+              src="/signet-white.png"
+              alt="SIFo Medical"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+            <div className="flex flex-col leading-tight">
+              <span className="font-bold text-[#0C2340] text-base">
+                SIFo Medical
+              </span>
+              <span className="text-xs text-[#9CA6B1] font-normal">
+                Process Portal
+              </span>
             </div>
-            <span className="font-semibold text-[#0C2340] group-hover:text-[#00A68B] transition-colors">
-              SIFo Medical
-            </span>
-            <span className="hidden sm:block text-xs text-[#9CA6B1] font-normal ml-1">
-              Process Portal
-            </span>
           </Link>
 
           {/* Breadcrumbs (Desktop) */}
