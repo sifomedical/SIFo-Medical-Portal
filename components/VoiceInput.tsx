@@ -49,10 +49,12 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
       }
 
       mediaRecorder.onstop = async () => {
+        console.log('MediaRecorder stopped, chunks:', audioChunksRef.current.length)
         setIsRecording(false)
         if (timerRef.current) clearInterval(timerRef.current)
 
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        console.log('Audio blob created, size:', audioBlob.size)
         await transcribeAudio(audioBlob)
 
         stream.getTracks().forEach((track) => track.stop())
@@ -97,55 +99,36 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
     setError(null)
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition
-      const recognition = new SpeechRecognition()
+      console.log('Starting transcription with blob size:', audioBlob.size)
 
-      recognition.lang = 'de-DE'
-      recognition.continuous = false
-      recognition.interimResults = false
+      const formData = new FormData()
+      formData.append('file', audioBlob, 'audio.webm')
+      formData.append('language', 'de')
 
-      let finalTranscript = ''
-
-      recognition.onresult = (event: any) => {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' '
-          }
-        }
-      }
-
-      recognition.onerror = (event: any) => {
-        if (event.error !== 'no-speech') {
-          setError('Fehler bei der Transkription: ' + event.error)
-        }
-      }
-
-      recognition.onend = () => {
-        const result = finalTranscript.trim()
-        setTranscript(result)
-        onTranscriptChange(result)
-        setIsTranscribing(false)
-      }
-
-      const audioUrl = URL.createObjectURL(audioBlob)
-      const audio = new Audio(audioUrl)
-
-      audio.oncanplay = () => {
-        recognition.start()
-      }
-
-      audio.onended = () => {
-        recognition.stop()
-        URL.revokeObjectURL(audioUrl)
-      }
-
-      audio.play().catch(() => {
-        setError('Fehler beim Abspielen der Aufnahme.')
-        setIsTranscribing(false)
+      console.log('Sending to /api/transcribe')
+      const response = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: formData,
       })
+
+      console.log('Response status:', response.status)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('API error:', errorData)
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log('Transcription result:', data)
+
+      const result = data.text.trim()
+      setTranscript(result)
+      onTranscriptChange(result)
     } catch (err: any) {
+      console.error('Transcription error:', err)
       setError('Fehler bei der Transkription: ' + err.message)
+    } finally {
       setIsTranscribing(false)
     }
   }
