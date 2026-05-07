@@ -17,6 +17,7 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
 
   const recognitionRef = useRef<any>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const transcriptRef = useRef<string>('')
   const maxRecordingDuration = 120
 
   useEffect(() => {
@@ -33,29 +34,36 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = 'de-DE'
+    recognition.maxAlternatives = 1
 
     recognition.onstart = () => {
       setIsListening(true)
       setError(null)
       setRecordingTime(0)
+      transcriptRef.current = ''
     }
 
     recognition.onresult = (event: any) => {
       let interimTranscript = ''
+      let finalTranscript = ''
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcriptSegment = event.results[i][0].transcript
 
         if (event.results[i].isFinal) {
-          transcript && setTranscript((prev) => prev + ' ' + transcriptSegment)
+          finalTranscript += transcriptSegment + ' '
         } else {
           interimTranscript += transcriptSegment
         }
       }
 
-      const finalTranscript = transcript + (interimTranscript ? ' ' + interimTranscript : '')
-      setTranscript(finalTranscript.trim())
-      onTranscriptChange(finalTranscript.trim())
+      if (finalTranscript) {
+        transcriptRef.current += finalTranscript
+      }
+
+      const displayText = (transcriptRef.current + interimTranscript).trim()
+      setTranscript(displayText)
+      onTranscriptChange(displayText)
     }
 
     recognition.onerror = (event: any) => {
@@ -73,6 +81,9 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
           break
         case 'not-allowed':
           errorMessage = 'Mikrophon-Zugriff wurde verweigert.'
+          break
+        case 'aborted':
+          errorMessage = 'Aufnahme wurde abgebrochen. Versuche erneut.'
           break
         default:
           errorMessage = `Fehler: ${event.error}`
@@ -92,7 +103,7 @@ export default function VoiceInput({ onTranscriptChange, isDisabled = false }: V
         recognition.abort()
       }
     }
-  }, [transcript, onTranscriptChange])
+  }, [onTranscriptChange])
 
   const startRecording = () => {
     if (!recognitionRef.current) return
