@@ -64,7 +64,7 @@ export async function getUserById(id: string): Promise<User | null> {
 
 // Create new user
 export async function createUser(
-  user: Omit<User, "createdAt">
+  user: Omit<User, "createdAt" | "id">
 ): Promise<User> {
   try {
     // Check if user already exists
