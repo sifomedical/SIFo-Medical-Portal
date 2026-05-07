@@ -5,7 +5,6 @@ import CategoryCard from "@/components/CategoryCard";
 import ProcessCard from "@/components/ProcessCard";
 import { BookOpen, Layers, TrendingUp, Plus } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 export default async function DashboardPage() {
   const session = await getServerSession();
@@ -27,25 +26,15 @@ export default async function DashboardPage() {
 
         <div className="relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center p-1.5 border border-white/30">
-                  <Image
-                    src="/signet-white.png"
-                    alt="SIFo Medical"
-                    width={40}
-                    height={40}
-                    className="w-full h-full"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-3xl sm:text-4xl font-semibold text-white">SIFo Medical</h1>
-                  <p className="text-sm text-[#D2EDE7]">Process Portal</p>
-                </div>
-              </div>
-              <p className="text-[#D2EDE7] text-sm font-light">
+            <div>
+              <p className="text-[#D2EDE7] text-sm font-light mb-2">
                 Willkommen zurück, {firstName} 👋
               </p>
+              <h1 className="text-4xl sm:text-5xl font-semibold mb-4">
+                SIFo Medical
+                <br />
+                <span className="text-[#D2EDE7] font-light">Process Portal</span>
+              </h1>
             </div>
             <Link
               href="/create-process"
