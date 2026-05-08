@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 import { CATEGORIES, CategoryId } from "@/types/process";
 import { getProcessesByCategory } from "@/data/processes";
-import ProcessCard from "@/components/ProcessCard";
+import { getActiveProcessesFromSupabase } from "@/lib/db-processes";
 import CategoryPageClient from "@/components/CategoryPageClient";
 import { ArrowLeft } from "lucide-react";
 
@@ -20,7 +20,18 @@ export default async function CategoryPage({ params }: Props) {
   const userEmail = session?.user?.email;
   const adminEmail = process.env.ADMIN_EMAIL;
 
-  const processes = getProcessesByCategory(category as CategoryId);
+  // JSON-Prozesse (statisch, im Build enthalten)
+  const jsonProcesses = getProcessesByCategory(category as CategoryId);
+
+  // Supabase-Prozesse (enthält neu genehmigte, die noch nicht im Build sind)
+  const supabaseProcesses = await getActiveProcessesFromSupabase(category as CategoryId);
+
+  // Merge: Supabase hat Vorrang (aktuellere Daten), JSON füllt den Rest
+  const supabaseSlugs = new Set(supabaseProcesses.map((p) => p.slug));
+  const processes = [
+    ...supabaseProcesses,
+    ...jsonProcesses.filter((p) => !supabaseSlugs.has(p.slug)),
+  ];
 
   return (
     <div className="space-y-8">
@@ -43,9 +54,7 @@ export default async function CategoryPage({ params }: Props) {
             <p className="text-gray-600 text-sm mt-0.5">{cat.description}</p>
           </div>
           <div className="ml-auto">
-            <span
-              className={`text-2xl font-bold ${cat.color}`}
-            >
+            <span className={`text-2xl font-bold ${cat.color}`}>
               {processes.length}
             </span>
             <p className="text-xs text-gray-500 text-right">Prozesse</p>

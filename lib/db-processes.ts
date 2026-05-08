@@ -280,3 +280,96 @@ export async function getPendingDraftCount(): Promise<number> {
   const drafts = await kv.smembers("processes:drafts");
   return drafts ? (drafts as string[]).length : 0;
 }
+
+// ─────────────────────────────────────────────────────────────
+// Supabase-based process queries (needed for Vercel production)
+// JSON files are read-only on Vercel – newly approved processes
+// only live in Supabase. These functions make them visible.
+// ─────────────────────────────────────────────────────────────
+
+import { CategoryId } from "@/types/process";
+
+/** Map a raw Supabase row to the Process type */
+function mapRowToProcess(row: any): Process {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    subtitle: row.subtitle || "",
+    description: row.description || "",
+    purpose: row.purpose || "",
+    scope: row.scope || "",
+    category: row.category as CategoryId,
+    responsibilities: row.responsibilities || [],
+    definitions: row.definitions || {},
+    inputs: row.inputs || [],
+    steps: row.steps || [],
+    risksAndControls: row.risks_and_controls || [],
+    outputs: row.outputs || [],
+    records: row.records || [],
+    tools: row.tools || [],
+    goals: row.goals || [],
+    tags: row.tags || [],
+    owner: row.owner || "",
+    frequency: row.frequency || "",
+    mermaidDiagram: row.mermaid_diagram || "",
+    processVideoUrl: row.process_video_url || "",
+    status: row.status,
+    lastUpdated: row.updated_at || row.created_at || new Date().toISOString(),
+    createdAt: row.created_at,
+    approvedAt: row.approved_at,
+    approvedBy: row.approved_by,
+  };
+}
+
+/**
+ * Fetch all active processes from Supabase, optionally filtered by category.
+ * Used to show newly approved processes that aren't in JSON files yet.
+ */
+export async function getActiveProcessesFromSupabase(
+  category?: CategoryId
+): Promise<Process[]> {
+  try {
+    let query = supabase
+      .from("processes")
+      .select("*")
+      .eq("status", "active");
+
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    const { data, error } = await query;
+    if (error || !data) {
+      console.warn("⚠️ Could not fetch active processes from Supabase:", error?.message);
+      return [];
+    }
+
+    return data.map(mapRowToProcess);
+  } catch (err) {
+    console.error("❌ getActiveProcessesFromSupabase failed:", err);
+    return [];
+  }
+}
+
+/**
+ * Fetch a single active (or any-status) process by slug from Supabase.
+ * Falls back to this when a process isn't found in the JSON files.
+ */
+export async function getProcessBySlugFromSupabase(
+  slug: string
+): Promise<Process | null> {
+  try {
+    const { data, error } = await supabase
+      .from("processes")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+
+    if (error || !data) return null;
+    return mapRowToProcess(data);
+  } catch (err) {
+    console.error("❌ getProcessBySlugFromSupabase failed:", err);
+    return null;
+  }
+}

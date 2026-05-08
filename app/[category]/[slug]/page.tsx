@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 import { CATEGORIES, CategoryId } from "@/types/process";
 import { getProcessBySlug, getAllSlugs } from "@/data/processes";
+import { getProcessBySlugFromSupabase } from "@/lib/db-processes";
 import StepAccordion from "@/components/StepAccordion";
 import MermaidDiagram from "@/components/MermaidDiagram";
 import ProcessExporter from "@/components/ProcessExporter";
@@ -16,7 +17,10 @@ interface Props {
 
 export default async function ProcessDetailPage({ params }: Props) {
   const { category, slug } = await params;
-  const proc = getProcessBySlug(category as CategoryId, slug);
+  // JSON-Datei zuerst (schnell), Supabase als Fallback (neu genehmigte Prozesse)
+  const proc =
+    getProcessBySlug(category as CategoryId, slug) ??
+    await getProcessBySlugFromSupabase(slug);
   if (!proc) notFound();
 
   const session = await getServerSession();

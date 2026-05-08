@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
-import { CATEGORIES } from "@/types/process";
+import { CATEGORIES, CategoryId } from "@/types/process";
 import { ALL_PROCESSES, getProcessesByCategory } from "@/data/processes";
+import { getActiveProcessesFromSupabase } from "@/lib/db-processes";
 import CategoryCard from "@/components/CategoryCard";
 import ProcessCard from "@/components/ProcessCard";
 import { BookOpen, Layers, TrendingUp, Plus } from "lucide-react";
@@ -12,11 +13,33 @@ export default async function DashboardPage() {
   const userEmail = session?.user?.email;
   const adminEmail = process.env.ADMIN_EMAIL;
 
-  const totalProcesses = ALL_PROCESSES.filter((p) => p.status === "active").length;
-  const recentProcesses = [...ALL_PROCESSES]
-    .filter((p) => p.status === "active")
+  // JSON-Prozesse (statisch im Build)
+  const jsonProcesses = ALL_PROCESSES.filter((p) => p.status === "active");
+
+  // Supabase-Prozesse (alle aktiven, inkl. neu genehmigte)
+  const supabaseProcesses = await getActiveProcessesFromSupabase();
+
+  // Merge: Supabase hat Vorrang, JSON füllt den Rest
+  const supabaseSlugs = new Set(supabaseProcesses.map((p) => p.slug));
+  const allProcesses = [
+    ...supabaseProcesses,
+    ...jsonProcesses.filter((p) => !supabaseSlugs.has(p.slug)),
+  ];
+
+  const totalProcesses = allProcesses.length;
+
+  const recentProcesses = [...allProcesses]
     .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
     .slice(0, 3);
+
+  // Prozessanzahl pro Kategorie (kombiniert)
+  const countByCategory = (catId: CategoryId) => {
+    const supabaseCount = supabaseProcesses.filter((p) => p.category === catId).length;
+    const jsonOnly = getProcessesByCategory(catId).filter((p) => !supabaseSlugs.has(p.slug)).length;
+    return supabaseCount + jsonOnly;
+  };
+
+  const activeCategoryCount = CATEGORIES.filter((c) => countByCategory(c.id) > 0).length;
 
   return (
     <div className="space-y-10">
@@ -67,9 +90,7 @@ export default async function DashboardPage() {
                 <Layers className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-3xl font-bold">
-                  {CATEGORIES.filter((c) => getProcessesByCategory(c.id).length > 0).length}
-                </p>
+                <p className="text-3xl font-bold">{activeCategoryCount}</p>
                 <p className="text-xs text-[#D2EDE7]">Bereiche</p>
               </div>
             </div>
@@ -99,7 +120,7 @@ export default async function DashboardPage() {
             <CategoryCard
               key={category.id}
               category={category}
-              processCount={getProcessesByCategory(category.id).length}
+              processCount={countByCategory(category.id)}
             />
           ))}
         </div>
