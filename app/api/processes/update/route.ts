@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { createClient } from '@supabase/supabase-js'
-import * as fs from 'fs'
-import * as path from 'path'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,8 +27,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'slug is required' }, { status: 400 })
     }
 
-    // Build Supabase update payload
-    const supabaseUpdate: any = {
+    const now = new Date().toISOString()
+
+    const supabasePayload: any = {
       title: processData.title,
       subtitle: processData.subtitle,
       description: processData.description,
@@ -52,59 +51,82 @@ export async function PUT(request: NextRequest) {
       process_video_url: processData.processVideoUrl,
       mermaid_diagram: processData.mermaidDiagram,
       status: 'active',
+      updated_at: now,
     }
 
-    // Update in Supabase (only if process exists there)
-    const { error: supabaseError } = await supabase
+    // Try UPDATE first
+    const { data: updated, error: updateError } = await supabase
       .from('processes')
-      .update(supabaseUpdate)
+      .update(supabasePayload)
       .eq('slug', slug)
+      .select()
 
-    if (supabaseError) {
-      console.warn('Supabase update warning (may not exist):', supabaseError.message)
+    if (updateError) {
+      console.error('Supabase update error:', updateError.message)
+      return NextResponse.json({ error: 'Datenbankfehler beim Speichern' }, { status: 500 })
     }
 
-    // Update the JSON file (primary data source for frontend)
-    const jsonFilePath = path.join(process.cwd(), 'data', 'processes', `${slug}.json`)
+    // If no row was updated, the process only exists in JSON → INSERT it into Supabase
+    if (!updated || updated.length === 0) {
+      console.log(`Process "${slug}" not in Supabase yet — inserting.`)
+      const { error: insertError } = await supabase
+        .from('processes')
+        .insert([{ slug, ...supabasePayload, created_at: now }])
 
-    if (!fs.existsSync(jsonFilePath)) {
-      return NextResponse.json({ error: 'Prozess-Datei nicht gefunden' }, { status: 404 })
+      if (insertError) {
+        console.error('Supabase insert error:', insertError.message)
+        return NextResponse.json({ error: 'Datenbankfehler beim Einfügen' }, { status: 500 })
+      }
     }
 
-    const existingJson = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'))
+    // Optional: update JSON file in local dev (silently ignored on Vercel)
+    try {
+      const fs = await import('fs')
+      const path = await import('path')
+      const jsonFilePath = path.join(process.cwd(), 'data', 'processes', `${slug}.json`)
 
-    const updatedJson = {
-      ...existingJson,
-      title: processData.title,
-      subtitle: processData.subtitle,
-      description: processData.description,
-      purpose: processData.purpose,
-      scope: processData.scope,
-      category: processData.category,
-      responsibilities: processData.responsibilities,
-      definitions: processData.definitions,
-      inputs: processData.inputs,
-      steps: processData.steps,
-      risksAndControls: processData.risksAndControls,
-      outputs: processData.outputs,
-      records: processData.records,
-      tools: processData.tools,
-      goals: processData.goals,
-      tags: processData.tags,
-      owner: processData.owner,
-      frequency: processData.frequency,
-      processVideoUrl: processData.processVideoUrl,
-      mermaidDiagram: processData.mermaidDiagram,
-      status: 'active',
-      lastUpdated: new Date().toISOString(),
+      if (fs.existsSync(jsonFilePath)) {
+        const existing = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'))
+        const updatedJson = {
+          ...existing,
+          ...Object.fromEntries(
+            Object.entries({
+              title: processData.title,
+              subtitle: processData.subtitle,
+              description: processData.description,
+              purpose: processData.purpose,
+              scope: processData.scope,
+              category: processData.category,
+              responsibilities: processData.responsibilities,
+              definitions: processData.definitions,
+              inputs: processData.inputs,
+              steps: processData.steps,
+              risksAndControls: processData.risksAndControls,
+              outputs: processData.outputs,
+              records: processData.records,
+              tools: processData.tools,
+              goals: processData.goals,
+              tags: processData.tags,
+              owner: processData.owner,
+              frequency: processData.frequency,
+              processVideoUrl: processData.processVideoUrl,
+              mermaidDiagram: processData.mermaidDiagram,
+              status: 'active',
+              lastUpdated: now,
+            }).filter(([, v]) => v !== undefined)
+          ),
+        }
+        fs.writeFileSync(jsonFilePath, JSON.stringify(updatedJson, null, 2))
+        console.log(`JSON file updated locally: ${slug}.json`)
+      }
+    } catch {
+      // Read-only filesystem on Vercel — expected, not an error
     }
-
-    fs.writeFileSync(jsonFilePath, JSON.stringify(updatedJson, null, 2))
 
     return NextResponse.json({
       success: true,
       slug,
-      category: updatedJson.category,
+      category: processData.category,
     })
   } catch (error) {
     console.error('Error updating process:', error)
