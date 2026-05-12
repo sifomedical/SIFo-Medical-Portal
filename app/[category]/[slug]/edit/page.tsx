@@ -25,10 +25,10 @@ export default async function EditProcessPage({ params }: Props) {
     redirect(`/${category}/${slug}`)
   }
 
-  // JSON first (fast), Supabase as fallback (includes newly created/updated processes)
+  // Supabase first (always up-to-date), JSON as fallback (unedited seed processes)
   const proc =
-    getProcessBySlug(category as CategoryId, slug) ??
-    await getProcessBySlugFromSupabase(slug)
+    await getProcessBySlugFromSupabase(slug) ??
+    getProcessBySlug(category as CategoryId, slug)
   if (!proc) notFound()
 
   // Map process fields to form data shape

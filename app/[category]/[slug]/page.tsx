@@ -17,10 +17,10 @@ interface Props {
 
 export default async function ProcessDetailPage({ params }: Props) {
   const { category, slug } = await params;
-  // JSON-Datei zuerst (schnell), Supabase als Fallback (neu genehmigte Prozesse)
+  // Supabase zuerst (immer aktuell), JSON als Fallback (Prozesse die noch nie editiert wurden)
   const proc =
-    getProcessBySlug(category as CategoryId, slug) ??
-    await getProcessBySlugFromSupabase(slug);
+    await getProcessBySlugFromSupabase(slug) ??
+    getProcessBySlug(category as CategoryId, slug);
   if (!proc) notFound();
 
   const session = await getServerSession();
