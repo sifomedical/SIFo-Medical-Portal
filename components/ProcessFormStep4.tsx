@@ -93,6 +93,7 @@ export default function ProcessFormStep4({
             type="text"
             value={newRisk}
             onChange={(e) => setNewRisk(e.target.value)}
+            onBlur={() => { if (newRisk.trim() && newControl.trim()) handleAddRisk() }}
             placeholder="z.B. Tippfehler"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />
@@ -101,6 +102,7 @@ export default function ProcessFormStep4({
             value={newControl}
             onChange={(e) => setNewControl(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddRisk()}
+            onBlur={() => { if (newRisk.trim() && newControl.trim()) handleAddRisk() }}
             placeholder="z.B. Spell-Check vor Publish"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />
@@ -162,6 +164,7 @@ export default function ProcessFormStep4({
             value={newOutput}
             onChange={(e) => setNewOutput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddOutput()}
+            onBlur={handleAddOutput}
             placeholder="z.B. Veröffentlichter Blogpost"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />
@@ -218,6 +221,7 @@ export default function ProcessFormStep4({
             value={newRecord}
             onChange={(e) => setNewRecord(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddRecord()}
+            onBlur={handleAddRecord}
             placeholder="z.B. Google Analytics tracking"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />

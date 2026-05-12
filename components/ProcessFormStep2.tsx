@@ -89,6 +89,7 @@ export default function ProcessFormStep2({
             value={newResponsibility}
             onChange={(e) => setNewResponsibility(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddResponsibility()}
+            onBlur={handleAddResponsibility}
             placeholder="z.B. John: Campaign Setup"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />
@@ -143,6 +144,7 @@ export default function ProcessFormStep2({
             type="text"
             value={newDefKey}
             onChange={(e) => setNewDefKey(e.target.value)}
+            onBlur={() => { if (newDefKey.trim() && newDefValue.trim()) handleAddDefinition() }}
             placeholder="Begriff / Abkürzung"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />
@@ -151,6 +153,7 @@ export default function ProcessFormStep2({
             value={newDefValue}
             onChange={(e) => setNewDefValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddDefinition()}
+            onBlur={() => { if (newDefKey.trim() && newDefValue.trim()) handleAddDefinition() }}
             placeholder="Bedeutung"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />
@@ -210,6 +213,7 @@ export default function ProcessFormStep2({
             value={newInput}
             onChange={(e) => setNewInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddInput()}
+            onBlur={handleAddInput}
             placeholder="z.B. Blog post draft"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A68B] focus:border-transparent"
           />
