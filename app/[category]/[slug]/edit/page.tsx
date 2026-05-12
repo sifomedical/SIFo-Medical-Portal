@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth/next'
 import { CategoryId } from '@/types/process'
 import { getProcessBySlug } from '@/data/processes'
+import { getProcessBySlugFromSupabase } from '@/lib/db-processes'
 import ProcessFormWrapper from '@/components/ProcessFormWrapper'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -24,7 +25,10 @@ export default async function EditProcessPage({ params }: Props) {
     redirect(`/${category}/${slug}`)
   }
 
-  const proc = getProcessBySlug(category as CategoryId, slug)
+  // JSON first (fast), Supabase as fallback (includes newly created/updated processes)
+  const proc =
+    getProcessBySlug(category as CategoryId, slug) ??
+    await getProcessBySlugFromSupabase(slug)
   if (!proc) notFound()
 
   // Map process fields to form data shape

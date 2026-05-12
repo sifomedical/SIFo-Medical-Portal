@@ -77,6 +77,7 @@ export default function ProcessFormWrapper({
 
   const validateStep = (step: number): { valid: boolean; errors: string[] } => {
     const errors: string[] = []
+    const isEdit = mode === 'edit'
 
     switch (step) {
       case 1:
@@ -88,35 +89,41 @@ export default function ProcessFormWrapper({
         if (!formData.scope?.trim()) errors.push('Scope required')
         break
       case 2:
-        if (!formData.responsibilities || formData.responsibilities.length === 0)
-          errors.push('At least one responsibility required')
-        if (!formData.definitions || Object.keys(formData.definitions).length === 0)
-          errors.push('At least one definition required')
-        if (!formData.inputs || formData.inputs.length === 0)
-          errors.push('At least one input required')
+        // In edit mode these are optional — older processes may not have them
+        if (!isEdit) {
+          if (!formData.responsibilities || formData.responsibilities.length === 0)
+            errors.push('At least one responsibility required')
+          if (!formData.definitions || Object.keys(formData.definitions).length === 0)
+            errors.push('At least one definition required')
+          if (!formData.inputs || formData.inputs.length === 0)
+            errors.push('At least one input required')
+        }
         break
       case 3:
-        if (!formData.steps || formData.steps.length < 2)
-          errors.push('At least 2 steps required')
+        if (!formData.steps || formData.steps.length < 1)
+          errors.push('At least 1 step required')
         break
       case 4:
-        if (!formData.risksAndControls || formData.risksAndControls.length === 0)
-          errors.push('At least one risk/control pair required')
-        if (!formData.outputs || formData.outputs.length === 0)
-          errors.push('At least one output required')
-        if (!formData.records || formData.records.length === 0)
-          errors.push('At least one record required')
+        // In edit mode these are optional — older processes may not have them
+        if (!isEdit) {
+          if (!formData.risksAndControls || formData.risksAndControls.length === 0)
+            errors.push('At least one risk/control pair required')
+          if (!formData.outputs || formData.outputs.length === 0)
+            errors.push('At least one output required')
+          if (!formData.records || formData.records.length === 0)
+            errors.push('At least one record required')
+        }
         break
       case 5:
         if (!formData.owner?.trim()) errors.push('Owner required')
         if (!formData.frequency?.trim()) errors.push('Frequency required')
-        if (!formData.tags || formData.tags.length < 2)
-          errors.push('At least 2 tags required')
+        if (!formData.tags || formData.tags.length < 1)
+          errors.push('At least 1 tag required')
         if (!formData.tools || formData.tools.length === 0)
           errors.push('At least one tool required')
         break
-      case 6:
-        // Final validation - all previous steps
+      case 6: {
+        // Final validation
         const allErrors: string[] = []
         if (!formData.title?.trim()) allErrors.push('Title required')
         if (!formData.subtitle?.trim()) allErrors.push('Subtitle required')
@@ -124,27 +131,29 @@ export default function ProcessFormWrapper({
         if (!formData.description?.trim()) allErrors.push('Description required')
         if (!formData.purpose?.trim()) allErrors.push('Purpose required')
         if (!formData.scope?.trim()) allErrors.push('Scope required')
-        if (!formData.responsibilities || formData.responsibilities.length === 0)
-          allErrors.push('Responsibilities required')
-        if (!formData.definitions || Object.keys(formData.definitions).length === 0)
-          allErrors.push('Definitions required')
-        if (!formData.inputs || formData.inputs.length === 0)
-          allErrors.push('Inputs required')
-        if (!formData.steps || formData.steps.length < 2)
-          allErrors.push('Steps required')
-        if (!formData.risksAndControls || formData.risksAndControls.length === 0)
-          allErrors.push('Risks required')
-        if (!formData.outputs || formData.outputs.length === 0)
-          allErrors.push('Outputs required')
-        if (!formData.records || formData.records.length === 0)
-          allErrors.push('Records required')
+        if (!formData.steps || formData.steps.length < 1) allErrors.push('Steps required')
         if (!formData.owner?.trim()) allErrors.push('Owner required')
         if (!formData.frequency?.trim()) allErrors.push('Frequency required')
-        if (!formData.tags || formData.tags.length < 2)
-          allErrors.push('Tags required')
-        if (!formData.tools || formData.tools.length === 0)
-          allErrors.push('Tools required')
+        if (!formData.tags || formData.tags.length < 1) allErrors.push('Tags required')
+        if (!formData.tools || formData.tools.length === 0) allErrors.push('Tools required')
+        if (!formData.goals || formData.goals.length === 0) allErrors.push('Goals required')
+        // Optional fields only required in create mode
+        if (!isEdit) {
+          if (!formData.responsibilities || formData.responsibilities.length === 0)
+            allErrors.push('Responsibilities required')
+          if (!formData.definitions || Object.keys(formData.definitions).length === 0)
+            allErrors.push('Definitions required')
+          if (!formData.inputs || formData.inputs.length === 0)
+            allErrors.push('Inputs required')
+          if (!formData.risksAndControls || formData.risksAndControls.length === 0)
+            allErrors.push('Risks required')
+          if (!formData.outputs || formData.outputs.length === 0)
+            allErrors.push('Outputs required')
+          if (!formData.records || formData.records.length === 0)
+            allErrors.push('Records required')
+        }
         return { valid: allErrors.length === 0, errors: allErrors }
+      }
     }
 
     return { valid: errors.length === 0, errors }
